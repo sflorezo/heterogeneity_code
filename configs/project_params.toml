@@ -3,7 +3,7 @@
 [paths]
 RAW_NPORT = "$DATA_RAW/sec_NPORT"
 PROCESSED_NPORT = "$DATA_WORK/sec_NPORT_work"
-OUT_NPORT_REPORT = "$DATA_WORK/sec_NPORT_work/sfo_report/out"
+PROJECT_TEMP = "$DATA_TEMP/heterogeneity_temp"
 
 [general]
 random_seed = 42

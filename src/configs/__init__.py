@@ -1,43 +1,25 @@
 #%%
 
-from .paths import (
-    MACHINE_ID, USER_ID,
-    DATA_RAW, DATA_WORK, DATA_TEMP, DATA_LOGS, 
-    CLEAN_NPORT_ROOT, PROJECT_TEMP, PROJECT_LOGS, 
-    RAW_NPORT, PROCESSED_NPORT, OUT_NPORT_REPORT,
-)
-from .params import RANDOM_SEED, CLEAN_HOLDINGS_CONFIGS
+from pathlib import Path
+from pysfo.basic import load_tomli
 from pysfo.basic import configure_pandas_display
-
-#--- Importing all settings in debugging or interactive sessions
-
-# from paths import RAW, WORK, TEMP, LOGS, MACHINE_ID, USER_ID
-# from params import N_WORKERS, VERBOSE
+from pathlib import Path
 
 #--- Unified snapshot for logging or experiment reproducibility
+config_path = (
+    Path(__file__)
+    .resolve()
+    .parents[2] / "configs_local" / "project_params.toml"
+)
 
-CONFIG = {
-    "MACHINE_ID": MACHINE_ID,
-    "USER_ID": USER_ID,
-    "PATHS": {
-        "RAW": DATA_RAW,
-        "WORK": DATA_WORK,
-        "TEMP": DATA_TEMP,
-        "LOGS": DATA_LOGS,
-        "CLEAN_NPORT_ROOT": CLEAN_NPORT_ROOT,
-        "PROJECT_TEMP" : PROJECT_TEMP,
-        "PROJECT_LOGS" : PROJECT_LOGS,
-        "RAW_NPORT": RAW_NPORT,
-        "PROCESSED_NPORT": PROCESSED_NPORT,
-        "OUT_NPORT_REPORT": OUT_NPORT_REPORT,
-    },
-    "PROJECT": {
-        "RANDOM_SEED" : RANDOM_SEED,
-    },
-    "CLEAN_HOLDINGS_CONFIGS" : CLEAN_HOLDINGS_CONFIGS,
+CONFIGS = load_tomli(config_path)
+CONFIGS = {k.upper(): v for k, v in CONFIGS.items()}
+CONFIGS = {
+    k_0 : {
+        k_1 : (Path(val_1) if k_0 == "PATHS" else val_1) for k_1, val_1 in dict_1.items()
+    } 
+    for k_0, dict_1 in CONFIGS.items()
 }
 
-#---- set ideal parameters for work
-
-# show up to 500 columns when printing dataframes
-configure_pandas_display(max_cols = 500, max_rows = 300)
+#---- Display options for pandas
+configure_pandas_display(max_cols=500, max_rows=300)
