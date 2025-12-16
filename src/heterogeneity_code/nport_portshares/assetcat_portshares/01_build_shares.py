@@ -10,6 +10,7 @@ import numpy as np
 import umap
 import random
 from sklearn.decomposition import PCA
+from sec_api import QueryApi
 
 # from pysfo.basic import *
 
@@ -18,8 +19,10 @@ PROJECT_TEMP = Path(CONFIGS["PATHS"]["PROJECT_TEMP"])
 
 random_seed = CONFIGS["GENERAL"]["random_seed"]
 
-#%% ========== helper functions ========== %%#
+#%% ========== params ========== %%#
+# FIXME: Params
 
+_lambda = 1e-4
 
 #%% ========== work 2025Q2 data ========== %%#
 
@@ -59,10 +62,6 @@ del assetcat_shares
 
 fundshares = load_parquet(PROJECT_TEMP / "assetcat_shares_2025q2.parquet")
 fundshares = fundshares.rename(columns={"w": "s"})
-
-#---- params ----#
-# FIXME: Params
-_lambda = 1e-4
 
 #---- small histogram to see portfolio shares distribution in period ----#
 
