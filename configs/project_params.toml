@@ -1,0 +1,11 @@
+# Project runtime configuration parameters.
+
+[paths]
+RAW_NPORT = "$DATA_RAW/sec_NPORT"
+PROCESSED_NPORT = "$DATA_WORK/sec_NPORT_work"
+OUT_NPORT_REPORT = "$DATA_WORK/sec_NPORT_work/sfo_report/out"
+
+[general]
+random_seed = 42
+n_workers = -1
+batch_job_verbose = 10
