@@ -1,15 +1,13 @@
 #%%
 
 from pathlib import Path
+import os
 from pysfo.basic import load_tomli
 from pysfo.basic import configure_pandas_display
-from pathlib import Path
 
 #--- Unified snapshot for logging or experiment reproducibility
 config_path = (
-    Path(__file__)
-    .resolve()
-    .parents[2] / "configs_local" / "project_params.toml"
+    Path(os.environ["PROJECT_ROOT"]) / "configs_local" / "project_params.toml"
 )
 
 CONFIGS = load_tomli(config_path)

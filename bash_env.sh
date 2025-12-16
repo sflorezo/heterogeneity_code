@@ -34,7 +34,7 @@ conda activate heterogeneity_code
 # DO NOT USE SCRIPTDIR. THIS FILE WILL BE RUN FROM DIFFERENT FILES,
 # SO PLEASE CALL GLOBALS ALREADY DEFINED IN MASTER ENVIRONMENT
 
-export PROJECT_ROOT="$CLEAN_NPORT_PATH"
+export PROJECT_ROOT="$HETEROGENEITY_CODE_PATH"
 export PROJECT_SRC="$PROJECT_ROOT/src"
 
 # ========== expand configs for python ========== #
@@ -52,6 +52,11 @@ printf "%s" "$expanded_toml" > $PROJECT_ROOT/configs_local/project_params.toml
 # CLEAN: I think this is no longer needed as the packages are included in installed packages on the conda env
 # # ---- PYTHONPATH
 # export PYTHONPATH="${PROJECT_ROOT}:${PROJECT_SRC}:${PYSFO_SRC}:${PYTHONPATH}"
+
+# ========== export useful paths ========== #d
+
+export_envfile "$PROJECT_ROOT/.vscode/.env" \
+    PROJECT_ROOT
 
 # ========== env activation assetion ========== #
 
