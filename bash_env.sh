@@ -37,6 +37,7 @@ conda activate heterogeneity_code
 export PROJECT_ROOT="$HETEROGENEITY_CODE_PATH"
 export PROJECT_SRC="$PROJECT_ROOT/src"
 export SEC_API_KEY="$SEC_API_KEY"
+export DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY"
 
 # ========== expand configs for python ========== #
 
@@ -58,7 +59,8 @@ printf "%s" "$expanded_toml" > $PROJECT_ROOT/configs_local/project_params.toml
 
 export_envfile "$PROJECT_ROOT/.vscode/.env" \
     PROJECT_ROOT \
-    SEC_API_KEY
+    SEC_API_KEY \
+    DEEPSEEK_API_KEY
 
 # ========== env activation assetion ========== #
 

@@ -10,6 +10,7 @@ random_seed = 42
 n_workers = -1
 batch_job_verbose = 10
 SEC_API_KEY="$SEC_API_KEY"
+DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY"
 
 [nport]
 process_quarters = { start = "2019q4", end = "2025q2" }
