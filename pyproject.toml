@@ -16,9 +16,9 @@ dependencies = [
     "lxml==6.0.2",
     # ML packages
     "scikit-learn==1.8.0",
-    # own packages
-    "pysfo @ file:///storage/Dropbox/01_main/dev/pysfo",
-    "clean_nport @ file:///storage/Dropbox/01_main/dev/clean_nport",
+    # own packages (DO NOT INSTALL IN HPC BC PATHS BREAK)
+    # "pysfo @ file:///storage/Dropbox/01_main/dev/pysfo",
+    # "clean_nport @ file:///storage/Dropbox/01_main/dev/clean_nport",
 ]
 
 [build-system]
