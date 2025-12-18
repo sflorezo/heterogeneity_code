@@ -5,6 +5,7 @@ archive/
 *.egg-info/
 __pycache__/
 *.pyc
+configs_local/
 
 # logs and outs
 *.out
