@@ -40,7 +40,7 @@ echo "[slurm] Started at: $(date)"
 
 #---- load master environment
 
-HOSTNAME_LOWER=$(hostname | tr '[:upper:]' '[:lower:]')
+HOSTNAME_LOWER="${HOSTNAME,,}"
 
 if [[ "$HOSTNAME_LOWER" =~ torch ]]; then
     LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
