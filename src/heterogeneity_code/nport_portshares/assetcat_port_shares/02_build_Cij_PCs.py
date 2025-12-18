@@ -1,16 +1,13 @@
 #%% ========== headers ========== %%#
 
-from configs import CONFIGS
+from heterogeneity_code.configs import CONFIGS
 from pysfo.basic import load_parquet, save_parquet, statatab, sumstats, test_time
 from pathlib import Path
 import pandas as pd
-from typing import cast, Dict
 import matplotlib.pyplot as plt
+from typing import cast
 import numpy as np
-import umap
-import random
 from sklearn.decomposition import PCA
-from sec_api import QueryApi
 
 # from pysfo.basic import *
 
@@ -26,7 +23,7 @@ _lambda = 1e-4
 
 #%% ========== work 2025Q2 data ========== %%#
 
-assetcat_shares = load_parquet(PROCESSED_NPORT / "NPORT_assetcat_portfolioshares.parquet")
+assetcat_shares = load_parquet(PROJECT_TEMP / "NPORT_assetcat_portfolioshares.parquet")
 assetcat_shares = assetcat_shares[assetcat_shares["quarterly"] == "2025Q2"]
 
 # see distribution of fund_assets (Huge high outliers)
@@ -58,7 +55,7 @@ assetcat_shares = assetcat_shares[keep].reset_index()
 save_parquet(assetcat_shares, PROJECT_TEMP / "assetcat_shares_2025q2.parquet")
 del assetcat_shares
 
-#%% ========== see assetcat portfolioshares ========== %%#
+#%% ========== main: build assetcat portfolioshares ========== %%#
 
 fundshares = load_parquet(PROJECT_TEMP / "assetcat_shares_2025q2.parquet")
 fundshares = fundshares.rename(columns={"w": "s"})
@@ -137,11 +134,16 @@ X_pc = X_pc.reset_index()
 
 pca.explained_variance_ratio_
 
+#--- merge with fund names and save working data ----#
 
-#--- merge with fund names and check description ----#
+fund_ids = fundshares[["fund_id", "fund_id_desc", "series_id", "series_lei", "series_name", "registrant_lei", "registrant_name"]].drop_duplicates()
+X_pc_ = pd.merge(fund_ids, X_pc, on = "fund_id")
 
-fund_names = fundshares[["fund_id", "series_name"]].drop_duplicates()
-X_pc_ = pd.merge(fund_names, X_pc, on = "fund_id")
+save_parquet(X_pc_, PROJECT_TEMP / "PC_funds.parquet")
+
+
+#%% ========== auxiliar: see names of main funds by PCA componets ========== %%#
+
 
 for k in range(1, K+1):
     print(k)
@@ -165,7 +167,3 @@ for k in range(1, K+1):
     with open(PROJECT_TEMP / f"pc_{k}.txt", "w") as f:
         f.writelines(lines)
     
-#---- temp
-
-bilateral.head(4)
-

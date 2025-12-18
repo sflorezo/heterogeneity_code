@@ -29,13 +29,14 @@ source $LOAD_ENV_PATH
 initialize_conda
 conda activate heterogeneity_code
 
-# ========== project level paths ========== #
+# ========== project level globals ========== #
 
 # DO NOT USE SCRIPTDIR. THIS FILE WILL BE RUN FROM DIFFERENT FILES,
 # SO PLEASE CALL GLOBALS ALREADY DEFINED IN MASTER ENVIRONMENT
 
 export PROJECT_ROOT="$HETEROGENEITY_CODE_PATH"
 export PROJECT_SRC="$PROJECT_ROOT/src"
+export SEC_API_KEY="$SEC_API_KEY"
 
 # ========== expand configs for python ========== #
 
@@ -53,10 +54,11 @@ printf "%s" "$expanded_toml" > $PROJECT_ROOT/configs_local/project_params.toml
 # # ---- PYTHONPATH
 # export PYTHONPATH="${PROJECT_ROOT}:${PROJECT_SRC}:${PYSFO_SRC}:${PYTHONPATH}"
 
-# ========== export useful paths ========== #d
+# ========== work variables ========== #d
 
 export_envfile "$PROJECT_ROOT/.vscode/.env" \
-    PROJECT_ROOT
+    PROJECT_ROOT \
+    SEC_API_KEY
 
 # ========== env activation assetion ========== #
 
