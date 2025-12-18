@@ -13,9 +13,9 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --account=torch_pr_366_general
-#SBATCH --cpus-per-task=28
-#SBATCH --time=3:00:00
-#SBATCH --mem=160G
+#SBATCH --cpus-per-task=3
+#SBATCH --time=1:00:00
+#SBATCH --mem=15G
 #SBATCH --job-name=build_Cij_panel_job
 #SBATCH --output=build_Cij_panel_job.out
 #SBATCH --mail-user=saf9215@stern.nyu.edu
