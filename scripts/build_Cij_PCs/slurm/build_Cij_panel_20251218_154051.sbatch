@@ -12,7 +12,7 @@
 # ---------------------------------------------
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --account={{ACCOUNT}}
+#SBATCH --account=torch_pr_366_general
 #SBATCH --cpus-per-task=28
 #SBATCH --time=3:00:00
 #SBATCH --mem=160G
