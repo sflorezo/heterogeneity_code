@@ -52,7 +52,7 @@ elif [[ "$HOSTNAME_LOWER" =~ ursus-pop ]]; then
     LOAD_ENV_PATH="/storage/Dropbox/01_main/dev/machine_env/dotenv/load_env.sh"
 
 else
-    echo "[error] Unknown machine '$HOSTNAME_LOWER'. Include in pipeline." >&2
+    echo "[error] Unknown machine '$HOSTNAME_LOWER' with HOSTNAME '$HOSTNAME'. Include in pipeline." >&2
     return 1
 fi
 source $LOAD_ENV_PATH
