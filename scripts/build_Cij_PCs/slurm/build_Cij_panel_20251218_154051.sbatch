@@ -44,10 +44,7 @@ echo "==================== SLURM JOB INFO"
 HOST_FQDN="$(hostname -f | tr '[:upper:]' '[:lower:]')"
 HOST_SHORT="$(hostname -s | tr '[:upper:]' '[:lower:]')"
 
-if [[ "$HOST_FQDN" == *.torch.hpc.nyu.edu ]]; then
-    LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
-
-elif [[ "$HOST_FQDN" == *.greene.hpc.nyu.edu ]]; then
+if [[ "$HOST_FQDN" == *.hpc.nyu.edu ]]; then
     LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
 
 elif [[ "$HOST_SHORT" == ursus-pop* || "$HOST_SHORT" == ursus* ]]; then
