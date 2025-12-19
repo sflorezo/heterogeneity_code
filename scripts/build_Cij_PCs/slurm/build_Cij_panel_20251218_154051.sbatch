@@ -41,23 +41,23 @@ echo "==================== SLURM JOB INFO"
 #---- load master environment
 
 # Resolve hostname (lowercase, short form)
-HOSTNAME_LOWER="$(hostname -f | tr '[:upper:]' '[:lower:]')"
+HOST_FQDN="$(hostname -f | tr '[:upper:]' '[:lower:]')"
+HOST_SHORT="$(hostname -s | tr '[:upper:]' '[:lower:]')"
 
-if [[ "$HOSTNAME_LOWER" == *.torch.hpc.nyu.edu ]]; then
+if [[ "$HOST_FQDN" == *.torch.hpc.nyu.edu ]]; then
     LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
 
-elif [[ "$HOSTNAME_LOWER" == *.greene.hpc.nyu.edu ]]; then
+elif [[ "$HOST_FQDN" == *.greene.hpc.nyu.edu ]]; then
     LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
 
 elif [[ "$HOST_SHORT" == ursus-pop* || "$HOST_SHORT" == ursus* ]]; then
     LOAD_ENV_PATH="/storage/Dropbox/01_main/dev/machine_env/dotenv/load_env.sh"
 
 else
-    echo "[error] Unknown host '$HOSTNAME_LOWER'. Include in pipeline." >&2
+    echo "[error] Unknown host '$HOST_FQDN' (short: $HOST_SHORT). Include in pipeline." >&2
     [[ "${BASH_SOURCE[0]}" != "${0}" ]] && return 1 || exit 1
 fi
 
-export MACHINE_ID
 source "$LOAD_ENV_PATH"
 
 # ----------------------------------------------------
