@@ -40,24 +40,24 @@ echo "[slurm] Started at: $(date)"
 
 #---- load master environment
 
-# Require MACHINE_ENV to be defined
-if [[ -z "${MACHINE_ENV:-}" ]]; then
-    echo "[error] MACHINE_ENV is not defined. Aborting. (Try sbatch --export=ALL)" >&2
+# Require MACHINE_ID to be defined
+if [[ -z "${MACHINE_ID:-}" ]]; then
+    echo "[error] MACHINE_ID is not defined. Aborting. (Try sbatch --export=ALL)" >&2
     [[ "${BASH_SOURCE[0]}" != "${0}" ]] && return 1 || exit 1
 fi
 
 # Select machine-specific env loader
-if [[ "$MACHINE_ENV" == "TORCH_HPC" ]]; then
+if [[ "$MACHINE_ID" == "TORCH_HPC" ]]; then
     LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
 
-elif [[ "$MACHINE_ENV" == "GREENE_HPC" ]]; then
+elif [[ "$MACHINE_ID" == "GREENE_HPC" ]]; then
     LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
 
-elif [[ "$MACHINE_ENV" == "URSUS_POP" ]]; then
+elif [[ "$MACHINE_ID" == "URSUS_POP" ]]; then
     LOAD_ENV_PATH="/storage/Dropbox/01_main/dev/machine_env/dotenv/load_env.sh"
 
 else
-    echo "[error] Unknown MACHINE_ENV '$MACHINE_ENV'. Include in pipeline." >&2
+    echo "[error] Unknown MACHINE_ID '$MACHINE_ID'. Include in pipeline." >&2
     [[ "${BASH_SOURCE[0]}" != "${0}" ]] && return 1 || exit 1
 fi
 
