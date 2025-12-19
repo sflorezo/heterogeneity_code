@@ -43,6 +43,8 @@ echo "==================== SLURM JOB INFO"
 # Resolve hostname (lowercase, short form)
 HOSTNAME_LOWER="$(hostname -s | tr '[:upper:]' '[:lower:]')"
 
+echo $HOSTNAME_LOWER
+
 # Identify machine from hostname
 case "$HOSTNAME_LOWER" in
     *torch*)
