@@ -41,9 +41,7 @@ echo "==================== SLURM JOB INFO"
 #---- load master environment
 
 # Resolve hostname (lowercase, short form)
-HOSTNAME_LOWER="$(hostname -s | tr '[:upper:]' '[:lower:]')"
-
-echo $HOSTNAME_LOWER
+HOSTNAME_LOWER="$(hostname -f | tr '[:upper:]' '[:lower:]')"
 
 # Identify machine from hostname
 case "$HOSTNAME_LOWER" in
