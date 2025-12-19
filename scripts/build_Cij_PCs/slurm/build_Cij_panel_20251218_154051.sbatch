@@ -40,22 +40,29 @@ echo "[slurm] Started at: $(date)"
 
 #---- load master environment
 
-HOSTNAME_LOWER="${HOSTNAME,,}"
+# Require MACHINE_ENV to be defined
+if [[ -z "${MACHINE_ENV:-}" ]]; then
+    echo "[error] MACHINE_ENV is not defined. Aborting. (Try sbatch --export=ALL)" >&2
+    [[ "${BASH_SOURCE[0]}" != "${0}" ]] && return 1 || exit 1
+fi
 
-if [[ "$HOSTNAME_LOWER" =~ torch ]]; then
+# Select machine-specific env loader
+if [[ "$MACHINE_ENV" == "TORCH_HPC" ]]; then
     LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
 
-elif [[ "$HOSTNAME_LOWER" =~ hpc ]]; then
+elif [[ "$MACHINE_ENV" == "GREENE_HPC" ]]; then
     LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
 
-elif [[ "$HOSTNAME_LOWER" =~ ursus-pop ]]; then
+elif [[ "$MACHINE_ENV" == "URSUS_POP" ]]; then
     LOAD_ENV_PATH="/storage/Dropbox/01_main/dev/machine_env/dotenv/load_env.sh"
 
 else
-    echo "[error] Unknown machine '$HOSTNAME_LOWER' with HOSTNAME '$HOSTNAME'. Include in pipeline." >&2
-    return 1
+    echo "[error] Unknown MACHINE_ENV '$MACHINE_ENV'. Include in pipeline." >&2
+    [[ "${BASH_SOURCE[0]}" != "${0}" ]] && return 1 || exit 1
 fi
-source $LOAD_ENV_PATH
+
+# Source env
+source "$LOAD_ENV_PATH"
 
 # ----------------------------------------------------
 # Thread control
