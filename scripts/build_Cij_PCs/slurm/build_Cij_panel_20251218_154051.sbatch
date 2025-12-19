@@ -43,29 +43,21 @@ echo "==================== SLURM JOB INFO"
 # Resolve hostname (lowercase, short form)
 HOSTNAME_LOWER="$(hostname -f | tr '[:upper:]' '[:lower:]')"
 
-# Identify machine from hostname
-case "$HOSTNAME_LOWER" in
-    *torch*)
-        MACHINE_ID="TORCH_HPC"
-        LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
-        ;;
-    *greene*)
-        MACHINE_ID="GREENE_HPC"
-        LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
-        ;;
-    ursus-pop*|ursus*)
-        MACHINE_ID="URSUS_POP"
-        LOAD_ENV_PATH="/storage/Dropbox/01_main/dev/machine_env/dotenv/load_env.sh"
-        ;;
-    *)
-        echo "[error] Unknown host '$HOSTNAME_LOWER'. Include in pipeline." >&2
-        [[ "${BASH_SOURCE[0]}" != "${0}" ]] && return 1 || exit 1
-        ;;
-esac
+if [[ "$HOSTNAME_LOWER" == *.torch.hpc.nyu.edu ]]; then
+    LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
+
+elif [[ "$HOSTNAME_LOWER" == *.greene.hpc.nyu.edu ]]; then
+    LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
+
+elif [[ "$HOST_SHORT" == ursus-pop* || "$HOST_SHORT" == ursus* ]]; then
+    LOAD_ENV_PATH="/storage/Dropbox/01_main/dev/machine_env/dotenv/load_env.sh"
+
+else
+    echo "[error] Unknown host '$HOSTNAME_LOWER'. Include in pipeline." >&2
+    [[ "${BASH_SOURCE[0]}" != "${0}" ]] && return 1 || exit 1
+fi
 
 export MACHINE_ID
-
-# Source env
 source "$LOAD_ENV_PATH"
 
 # ----------------------------------------------------
