@@ -6,8 +6,8 @@ echo "#--------------------------------------#"
 
 # ========== load master environment ========== #
 
-source $HOME/.env_machine
-# echo $HETEROGENEITY_CODE_PATH
+# source $HOME/.env_machine
+source $HOME/.bashrc
 
 # ========== activate project conda env ========== #
 
