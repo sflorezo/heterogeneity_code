@@ -25,7 +25,7 @@ export DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY"
 
 # ========== expand configs for python ========== #
 
-mkdir -p configs_local
+mkdir -p $PROJECT_ROOT/configs_local
 expanded_toml=$(envsubst < $PROJECT_ROOT/configs/project_params.toml)
 printf "%s" "$expanded_toml" > $PROJECT_ROOT/configs_local/project_params.toml
 
