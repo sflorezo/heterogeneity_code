@@ -55,7 +55,7 @@ echo
 
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 # bash "build_Cij_panel.sh" 2>&1 | tee "${SLURM_JOB_NAME}_${TIMESTAMP}.log"
-# bash "build_Cij_panel.sh"
+bash "build_Cij_panel.sh"
 exit_code=${PIPESTATUS[0]}
 
 if [ "$exit_code" -ne 0 ]; then
