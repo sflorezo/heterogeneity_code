@@ -12,10 +12,9 @@
 # ---------------------------------------------
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --account=torch_pr_366_general
-#SBATCH --cpus-per-task=3
-#SBATCH --time=1:00:00
-#SBATCH --mem=15G
+#SBATCH --cpus-per-task=28
+#SBATCH --time=3:00:00
+#SBATCH --mem=160G
 #SBATCH --job-name=build_Cij_panel_job
 #SBATCH --output=build_Cij_panel_job.out
 #SBATCH --mail-user=saf9215@stern.nyu.edu
@@ -32,30 +31,15 @@ set -euo pipefail
 
 #---- For reproducibility
 echo "==================== SLURM JOB INFO"
-# echo "[slurm] Job started on $(hostname)"
-# echo "[slurm] Job ID: ${SLURM_JOB_ID}"
-# echo "[slurm] Job name: ${SLURM_JOB_NAME}"
-# echo "[slurm] Nodes: ${SLURM_JOB_NODELIST}"
-# echo "[slurm] Started at: $(date)"
+echo "[slurm] Job started on $(hostname)"
+echo "[slurm] Job ID: ${SLURM_JOB_ID}"
+echo "[slurm] Job name: ${SLURM_JOB_NAME}"
+echo "[slurm] Nodes: ${SLURM_JOB_NODELIST}"
+echo "[slurm] Started at: $(date)"
 
 #---- load master environment
 
-# Resolve hostname (lowercase, short form)
-HOST_FQDN="$(hostname -f | tr '[:upper:]' '[:lower:]')"
-HOST_SHORT="$(hostname -s | tr '[:upper:]' '[:lower:]')"
-
-if [[ "$HOST_FQDN" == *.hpc.nyu.edu ]]; then
-    LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
-
-elif [[ "$HOST_SHORT" == ursus-pop* || "$HOST_SHORT" == ursus* ]]; then
-    LOAD_ENV_PATH="/storage/Dropbox/01_main/dev/machine_env/dotenv/load_env.sh"
-
-else
-    echo "[error] Unknown host '$HOST_FQDN' (short: $HOST_SHORT). Include in pipeline." >&2
-    [[ "${BASH_SOURCE[0]}" != "${0}" ]] && return 1 || exit 1
-fi
-
-source "$LOAD_ENV_PATH"
+source "$HOME/.env_machine"
 
 # ----------------------------------------------------
 # Thread control
@@ -71,7 +55,7 @@ echo
 
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 # bash "build_Cij_panel.sh" 2>&1 | tee "${SLURM_JOB_NAME}_${TIMESTAMP}.log"
-bash "build_Cij_panel.sh"
+# bash "build_Cij_panel.sh"
 exit_code=${PIPESTATUS[0]}
 
 if [ "$exit_code" -ne 0 ]; then
