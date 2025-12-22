@@ -7,11 +7,11 @@ echo "#--------------------------------------#"
 # ========== load master environment ========== #
 
 source $HOME/.env_machine
+# echo $HETEROGENEITY_CODE_PATH
 
 # ========== activate project conda env ========== #
 
-initialize_conda
-conda activate heterogeneity_code
+micromamba activate heterogeneity_code
 
 # ========== project level globals ========== #
 
