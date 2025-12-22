@@ -19,7 +19,9 @@ source $HOME/.env_machine
 
 # initialize_micromamba
 
-micromamba activate
+type initialize_micromamba
+
+
 micromamba activate heterogeneity_code
 
 # ========== project level globals ========== #
