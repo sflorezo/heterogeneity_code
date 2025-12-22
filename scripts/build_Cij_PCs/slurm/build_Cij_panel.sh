@@ -3,6 +3,7 @@
 # Simplified batch job default example
 # ============================================================
 
+PROJECT_ROOT_PATH="$DEV_PATH/heterogeneity_code"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # bash env should be the project bash_env, with project-specific uploads for pythonenv
