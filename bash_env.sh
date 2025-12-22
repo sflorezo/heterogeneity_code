@@ -11,7 +11,8 @@ source $HOME/.env_machine
 
 # ========== activate project conda env ========== #
 
-initialize_micromamba
+# initialize_micromamba
+eval "$(micromamba shell hook --shell bash)"
 micromamba activate heterogeneity_code
 
 # ========== project level globals ========== #
