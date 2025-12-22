@@ -11,4 +11,4 @@ SCRIPT_DIR="$PROJECT_ROOT_PATH/scripts/build_Cij_PCs/build.py"
 # bash env should be the project bash_env, with project-specific uploads for pythonenv
 
 source "$PROJECT_ROOT_PATH/bash_env.sh"
-# python -u "${SCRIPT_DIR}/build.py" 2>&1 | tee "${SCRIPT_DIR}/build.log"
+python -u "${SCRIPT_DIR}/build.py" 2>&1 | tee "${SCRIPT_DIR}/build.log"
