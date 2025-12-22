@@ -17,47 +17,43 @@ source $HOME/.env_machine
 
 # ========== activate project conda env ========== #
 
-# initialize_micromamba
+initialize_micromamba
+micromamba activate heterogeneity_code
 
-declare -F
+# ========== project level globals ========== #
 
+# DO NOT USE SCRIPTDIR. THIS FILE WILL BE RUN FROM DIFFERENT FILES,
+# SO PLEASE CALL GLOBALS ALREADY DEFINED IN MASTER ENVIRONMENT
 
-# micromamba activate heterogeneity_code
+export PROJECT_ROOT="$HETEROGENEITY_CODE_PATH"
+export PROJECT_SRC="$PROJECT_ROOT/src"
+export SEC_API_KEY="$SEC_API_KEY"
+export DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY"
 
-# # ========== project level globals ========== #
+# ========== expand configs for python ========== #
 
-# # DO NOT USE SCRIPTDIR. THIS FILE WILL BE RUN FROM DIFFERENT FILES,
-# # SO PLEASE CALL GLOBALS ALREADY DEFINED IN MASTER ENVIRONMENT
+mkdir -p configs_local
+expanded_toml=$(envsubst < $PROJECT_ROOT/configs/project_params.toml)
+printf "%s" "$expanded_toml" > $PROJECT_ROOT/configs_local/project_params.toml
 
-# export PROJECT_ROOT="$HETEROGENEITY_CODE_PATH"
-# export PROJECT_SRC="$PROJECT_ROOT/src"
-# export SEC_API_KEY="$SEC_API_KEY"
-# export DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY"
+# ========== project level aliases ========== #d
 
-# # ========== expand configs for python ========== #
+# alias cd_documents='cd $DATA_RAW/factset/documents'
+# alias cd_symbology='cd $DATA_TEMP/factset/symbology'
+# alias cd_ownership='cd $DATA_RAW/factset/ownership'
 
-# mkdir -p configs_local
-# expanded_toml=$(envsubst < $PROJECT_ROOT/configs/project_params.toml)
-# printf "%s" "$expanded_toml" > $PROJECT_ROOT/configs_local/project_params.toml
+# CLEAN: I think this is no longer needed as the packages are included in installed packages on the conda env
+# # ---- PYTHONPATH
+# export PYTHONPATH="${PROJECT_ROOT}:${PROJECT_SRC}:${PYSFO_SRC}:${PYTHONPATH}"
 
-# # ========== project level aliases ========== #d
+# ========== work variables ========== #d
 
-# # alias cd_documents='cd $DATA_RAW/factset/documents'
-# # alias cd_symbology='cd $DATA_TEMP/factset/symbology'
-# # alias cd_ownership='cd $DATA_RAW/factset/ownership'
+export_envfile "$PROJECT_ROOT/.vscode/.env" \
+    PROJECT_ROOT \
+    SEC_API_KEY \
+    DEEPSEEK_API_KEY
 
-# # CLEAN: I think this is no longer needed as the packages are included in installed packages on the conda env
-# # # ---- PYTHONPATH
-# # export PYTHONPATH="${PROJECT_ROOT}:${PROJECT_SRC}:${PYSFO_SRC}:${PYTHONPATH}"
+# ========== env activation assetion ========== #
 
-# # ========== work variables ========== #d
-
-# export_envfile "$PROJECT_ROOT/.vscode/.env" \
-#     PROJECT_ROOT \
-#     SEC_API_KEY \
-#     DEEPSEEK_API_KEY
-
-# # ========== env activation assetion ========== #
-
-# echo "[heterogeneity_code] Environment heterogeneity_code activated succesfully"
+echo "[heterogeneity_code] Environment heterogeneity_code activated succesfully"
 
