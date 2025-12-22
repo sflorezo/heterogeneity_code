@@ -6,23 +6,7 @@ echo "#--------------------------------------#"
 
 # ========== load master environment ========== #
 
-HOSTNAME_LOWER=$(hostname | tr '[:upper:]' '[:lower:]')
-
-if [[ "$HOSTNAME_LOWER" =~ torch ]]; then
-    LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
-
-elif [[ "$HOSTNAME_LOWER" =~ hpc ]]; then
-    LOAD_ENV_PATH="$HOME/dev/machine_env/dotenv/load_env.sh"
-
-elif [[ "$HOSTNAME_LOWER" =~ ursus-pop ]]; then
-    LOAD_ENV_PATH="/storage/Dropbox/01_main/dev/machine_env/dotenv/load_env.sh"
-
-else
-    echo "[error] Unknown machine '$HOSTNAME_LOWER'. Include in pipeline." >&2
-    return 1
-fi
-
-source $LOAD_ENV_PATH
+source $HOME/.env_machine
 
 # ========== activate project conda env ========== #
 
