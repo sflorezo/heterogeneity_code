@@ -3,6 +3,8 @@
 # Simplified batch job default example
 # ============================================================
 
+source "$HOME/.env_machine"
+
 PROJECT_ROOT_PATH="$DEV_PATH/heterogeneity_code"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

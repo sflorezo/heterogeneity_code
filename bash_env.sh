@@ -1,9 +1,9 @@
 # --- Guard: this file must be sourced, not executed ---
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    echo "[error] bash_env.sh must be sourced, not executed."
-    echo "[error] Use: source bash_env.sh"
-    exit 1
-fi
+# if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+#     echo "[error] bash_env.sh must be sourced, not executed."
+#     echo "[error] Use: source bash_env.sh"
+#     exit 1
+# fi
 
 # ========== headers ========== #
 
@@ -13,10 +13,11 @@ echo "#--------------------------------------#"
 
 # ========== load master environment ========== #
 
-source $HOME/.bashrc
+source $HOME/.env_machine
 
 # ========== activate project conda env ========== #
 
+initialize_micromamba
 micromamba activate heterogeneity_code
 
 # ========== project level globals ========== #
