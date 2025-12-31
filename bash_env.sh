@@ -23,11 +23,12 @@ export PROJECT_SRC="$PROJECT_ROOT/src"
 export SEC_API_KEY="$SEC_API_KEY"
 export DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY"
 
-# ========== expand configs for python ========== #
+# CLEAN: I think this is not necessary as I am now handling expansion in python
+# # ========== expand configs for python ========== #
 
-mkdir -p $PROJECT_ROOT/configs_local
-expanded_toml=$(envsubst < $PROJECT_ROOT/configs/project_params.toml)
-printf "%s" "$expanded_toml" > $PROJECT_ROOT/configs_local/project_params.toml
+# mkdir -p $PROJECT_ROOT/configs_local
+# expanded_toml=$(envsubst < $PROJECT_ROOT/configs/project_params.toml)
+# printf "%s" "$expanded_toml" > $PROJECT_ROOT/configs_local/project_params.toml
 
 # ========== project level aliases ========== #d
 
