@@ -10,7 +10,7 @@ from pathlib import Path
 
 def _expand_paths(path_dict: dict) -> dict:
     path_dict = {
-        k : os.path.expandvars(v) 
+        k : Path(os.path.expandvars(v)) 
         for k, v in path_dict.items()
     }
 
