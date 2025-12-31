@@ -4,7 +4,7 @@ authors = [{name = "..."}]
 version = "0.1.0"
 description = "Short description of the project."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 
 dependencies = [
     # basic
