@@ -15,5 +15,5 @@ RUN_SCRIPT_DIR="$HETEROGENEITY_CODE_PATH/scripts/a_build_Cij_PCs"
 # bash env should be the project bash_env, with project-specific uploads for pythonenv
 
 source "$BASH_ENV_PATH"
-python -u "${RUN_SCRIPT_DIR}/1_build_portf_weights.py" 2>&1 | tee "${RUN_SCRIPT_DIR}/1_build_portf_weights.log"
+# python -u "${RUN_SCRIPT_DIR}/1_build_portf_weights.py" 2>&1 | tee "${RUN_SCRIPT_DIR}/1_build_portf_weights.log"
 # python -u "${RUN_SCRIPT_DIR}/build.py" 2>&1 | tee "${RUN_SCRIPT_DIR}/build.log"

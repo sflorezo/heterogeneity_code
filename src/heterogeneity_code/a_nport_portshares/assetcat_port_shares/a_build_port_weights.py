@@ -45,7 +45,7 @@ def _group_asset_cat_levels(df: pd.DataFrame, bool = True) -> pd.DataFrame:
 
 #%% ========== buid portfolio shares ========== %%
 
-def build_quarterly_portfolio_shares(yq):
+def _build_quarterly_portfolio_shares(yq):
     
     ###
     # yq = "2025q2"
@@ -98,19 +98,22 @@ def build_quarterly_portfolio_shares(yq):
 
     return holdings_df
 
-#%% ========== headers ========== %%#
+#%% ========== build_portf_weights ========== %%#
 
-quarters = (
-        pd
-        .period_range(process_quarters["start"].upper(), 
-                      process_quarters["end"].upper(), freq="Q")
-        .astype(str).str.lower().tolist()
-    )
+def build_portf_weights():
 
-df_list = Parallel(n_jobs = joblib_n_workers, verbose = joblib_verbose)(
-        delayed(build_quarterly_portfolio_shares)(q) for q in quarters
-    )
+    quarters = (
+            pd
+            .period_range(process_quarters["start"].upper(), 
+                        process_quarters["end"].upper(), freq="Q")
+            .astype(str).str.lower().tolist()
+        )
 
-df = pd.concat(df_list, axis = 0)
+    df_list = Parallel(n_jobs = joblib_n_workers, verbose = joblib_verbose)(
+            delayed(_build_quarterly_portfolio_shares)(q) for q in quarters
+        )
 
-save_parquet(df, PROJECT_TEMP / "NPORT_assetcat_portfolioshares.parquet")
+    df = pd.concat(df_list, axis = 0)
+
+    save_parquet(df, PROJECT_TEMP / "NPORT_assetcat_portfolioshares.parquet")
+    print("Saved PROJECT_TEMP/NPORT_assetcat_portfolioshares.parquet")

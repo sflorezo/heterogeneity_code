@@ -1,1 +1,3 @@
-from heterogeneity_code.a_nport_portshares.assetcat_port_shares import a_build_port_weights 
+from heterogeneity_code.a_nport_portshares.assetcat_port_shares.a_build_port_weights import  build_portf_weights
+
+build_portf_weights()

@@ -72,16 +72,16 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
 
     all_funds = df[~mask][["fund_id", "fund_total_assets"]]
     all_funds["fund_weight"] = all_funds["fund_total_assets"] / all_funds["fund_total_assets"].max()
-    all_asset_cats = df[["asset_cat"]].drop_duplicates()
+    all_asset_buckets = df[["asset_bucket"]].drop_duplicates()
 
-    bilateral = all_asset_cats.merge(all_asset_cats, how = "cross")
+    bilateral = all_asset_buckets.merge(all_asset_buckets, how = "cross")
     bilateral = all_funds.merge(bilateral, how = "cross")
     
     bilateral = (
         bilateral.rename(
             columns = {
-                "asset_cat_x" : "asset_cat_i",
-                "asset_cat_y" : "asset_cat_j"
+                "asset_bucket_x" : "asset_bucket_i",
+                "asset_bucket_y" : "asset_bucket_j"
             }
         )
     )
@@ -90,17 +90,21 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
 
         bilateral = (
             bilateral.merge(
-                df[["fund_id", "asset_cat", "s"]],
-                left_on = ["fund_id", f"asset_cat_{i}"],
-                right_on = ["fund_id", "asset_cat"],
+                df[["fund_id", "asset_bucket", "s", "currency_value"]],
+                left_on = ["fund_id", f"asset_bucket_{i}"],
+                right_on = ["fund_id", "asset_bucket"],
                 how = "left",
                 validate = "m:1"
             )
-            .drop(columns = "asset_cat")
+            .drop(columns = "asset_bucket")
         )
 
         bilateral["s"] = bilateral["s"].fillna(0)
-        bilateral.rename(columns = {"s": f"s_{i}"}, inplace = True)
+        bilateral["currency_value"] = bilateral["currency_value"].fillna(0)
+        bilateral.rename(columns = {
+            "s": f"s_{i}",
+            "currency_value" : f"currency_value_{i}"
+        }, inplace = True)
 
     # drop non-informative positons (decide not to do for now)
 
@@ -108,9 +112,13 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
     # bilateral = bilateral[~mask].copy()
 
     # compute bilateral contrasts
+
+    bilateral["_c_ij_pre_w"] = bilateral["currency_value_i"].abs() + bilateral["currency_value_j"].abs()
+    bilateral["_c_ij_w_denom"] = bilateral.groupby("fund_id")["_c_ij_pre_w"].transform("sum")
+    bilateral["_c_ij_w"] = bilateral["_c_ij_pre_w"] / bilateral["_c_ij_w_denom"]
     
     bilateral["c_ij"] = (
-        (bilateral["fund_weight"]) * 
+        (bilateral["_c_ij_w"]) * 
         (bilateral["s_i"] - bilateral["s_j"]) / ( bilateral["s_i"] + bilateral["s_j"] + _lambda)
     )
 
@@ -121,13 +129,15 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
 
     # bilateral contrast (C_ij) matrix
 
-    bilateral.drop(columns = "fund_weight", inplace = True)
+    bilateral.drop(columns = bilateral.filter(regex = r"^_c_ij").columns, inplace = True)
+    bilateral.drop(columns = bilateral.filter(regex = r"^currency_value").columns, inplace = True)
+    bilateral.drop(columns = bilateral.filter(regex = r"^s_").columns, inplace = True)
 
     C_ij = (
-        bilateral[["fund_id", "asset_cat_i", "asset_cat_j", "c_ij"]]
+        bilateral[["fund_id", "asset_bucket_i", "asset_bucket_j", "c_ij"]]
         .pivot_table(values = "c_ij",
                     index = "fund_id",
-                    columns = ["asset_cat_i", "asset_cat_j"])
+                    columns = ["asset_bucket_i", "asset_bucket_j"])
     )
 
     #--- Get principal components ----#
@@ -140,14 +150,14 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
     X_pc.index = C_ij.index
     X_pc = X_pc.reset_index()
 
-    pca.explained_variance_ratio_
+    # pca.explained_variance_ratio_
 
     #--- merge with fund names and save working data ----#
 
     fund_ids = df[["quarterly", "fund_id", "fund_id_desc", "series_id", "series_lei", "series_name", "registrant_lei", "registrant_name"]].drop_duplicates()
     X_pc_ = pd.merge(fund_ids, X_pc, on = "fund_id")
 
-    X_pc_["quarterly"]
+    # X_pc_["quarterly"]
 
     return X_pc_
 
