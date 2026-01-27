@@ -4,7 +4,6 @@ from heterogeneity_code.configs import CONFIGS
 from pysfo.basic import load_parquet
 from matplotlib import pyplot as plt
 
-
 # from pysfo.basic import *
 
 PROJECT_TEMP = CONFIGS["PATHS"]["PROJECT_TEMP"]
@@ -35,3 +34,4 @@ for col in PC_cols:
     plt.plot(period_col, mean_col, label = col)
     plt.legend()
 plt.show()
+# %%

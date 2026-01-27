@@ -56,6 +56,8 @@ def _drop_smallest_funds_in_quarter(quarterly_assetcat_shares_df):
     
 def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
 
+    # quarterly_assetcat_shares_df = df_list[0]
+
     df = quarterly_assetcat_shares_df.copy()
 
     if df["quarterly"].nunique() != 1:
@@ -66,11 +68,15 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
 
     #--- compute bilateral contrasts ----#
 
-    all_funds = df[["fund_id"]].drop_duplicates()
+    mask = df["fund_id"].duplicated()
+
+    all_funds = df[~mask][["fund_id", "fund_total_assets"]]
+    all_funds["fund_weight"] = all_funds["fund_total_assets"] / all_funds["fund_total_assets"].max()
     all_asset_cats = df[["asset_cat"]].drop_duplicates()
 
     bilateral = all_asset_cats.merge(all_asset_cats, how = "cross")
     bilateral = all_funds.merge(bilateral, how = "cross")
+    
     bilateral = (
         bilateral.rename(
             columns = {
@@ -95,8 +101,18 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
 
         bilateral["s"] = bilateral["s"].fillna(0)
         bilateral.rename(columns = {"s": f"s_{i}"}, inplace = True)
-        
-    bilateral["c_ij"] = (bilateral["s_i"] - bilateral["s_j"]) / ( bilateral["s_i"] + bilateral["s_j"] + _lambda)
+
+    # drop non-informative positons (decide not to do for now)
+
+    # mask = (bilateral["s_i"] == 0) & (bilateral["s_j"] == 0)
+    # bilateral = bilateral[~mask].copy()
+
+    # compute bilateral contrasts
+    
+    bilateral["c_ij"] = (
+        (bilateral["fund_weight"]) * 
+        (bilateral["s_i"] - bilateral["s_j"]) / ( bilateral["s_i"] + bilateral["s_j"] + _lambda)
+    )
 
     _cij_min = bilateral["c_ij"].quantile(0.01)
     _cij_max = bilateral["c_ij"].quantile(0.99)
@@ -104,6 +120,8 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
     bilateral["c_ij"] = np.where(bilateral["c_ij"] > _cij_max, _cij_max, bilateral["c_ij"])
 
     # bilateral contrast (C_ij) matrix
+
+    bilateral.drop(columns = "fund_weight", inplace = True)
 
     C_ij = (
         bilateral[["fund_id", "asset_cat_i", "asset_cat_j", "c_ij"]]

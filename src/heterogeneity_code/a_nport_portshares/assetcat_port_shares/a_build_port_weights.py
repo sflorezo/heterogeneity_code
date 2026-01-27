@@ -5,6 +5,7 @@ from typing import cast, Dict
 from pysfo.basic import load_parquet, save_parquet, relocate_columns
 import pandas as pd
 from joblib import Parallel, delayed 
+import numpy as np
 
 # from pysfo.basic import *
 
@@ -15,20 +16,51 @@ joblib_n_workers = CONFIGS["GENERAL"]["n_workers"]
 joblib_verbose = CONFIGS["GENERAL"]["batch_job_verbose"]
 
 
+#%% ========== helper functions ========== %%
+
+def _group_asset_cat_levels(df: pd.DataFrame, bool = True) -> pd.DataFrame:
+
+    # df = holdings_df.copy()
+    
+    issuer = df["issuer_type"].astype("string").str.upper()
+    act    = df["asset_cat_type"].astype("string").str.lower()
+
+    df["asset_bucket"] = np.select(
+        [
+            issuer.isin(["USGSE", "USGA", "UST"]) & act.eq("debt"),  # 1) sovereign debt
+            issuer.eq("CORP") & act.eq("debt"),                     # 2) corporate debt
+            act.eq("equity"),                                       # 3) equity
+            act.eq("loans"),                                        # 4) loans
+        ],
+        [
+            "sovereign debt",
+            "corporate debt",
+            "equity",
+            "loans",
+        ],
+        default="other",                                            # 5) other
+    )
+
+    return df
+
 #%% ========== buid portfolio shares ========== %%
 
 def build_quarterly_portfolio_shares(yq):
-
+    
     ###
     # yq = "2025q2"
     ###
 
     holdings_df = load_parquet(PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet")
 
+    # group asset cat levels
+
+    holdings_df = _group_asset_cat_levels(holdings_df)
+
     # collapse at asset_cat_level
 
     fund_ids = ["fund_id", "quarterly"]
-    asset_cat_ids = ["asset_cat", "asset_cat_type", "asset_cat_desc"]
+    asset_cat_ids = ["asset_bucket"] # ["asset_cat", "asset_cat_type", "asset_cat_desc"]
     fund_vars = [
         item for item in
         (
