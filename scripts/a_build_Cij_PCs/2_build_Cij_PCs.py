@@ -1,3 +1,0 @@
-from heterogeneity_code.a_nport_portshares.assetcat_port_shares.b_build_Cij_PCs import fullpanel_build_Cij_PC
-
-fullpanel_build_Cij_PC()
