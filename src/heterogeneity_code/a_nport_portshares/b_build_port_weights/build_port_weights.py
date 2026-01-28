@@ -18,6 +18,21 @@ joblib_verbose = CONFIGS["GENERAL"]["batch_job_verbose"]
 
 #%% ========== helper functions ========== %%
 
+def _keep_bond_funds(holdings_df: pd.DataFrame) -> pd.DataFrame:
+
+    # yq = "2025q2"
+    # holdings_df = load_parquet(PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet")
+
+    from heterogeneity_code.a_nport_portshares.a_select_sample.funds_that_hold_bonds import funds_that_hold_bonds_list
+
+    bundfunds = funds_that_hold_bonds_list()
+    bundfunds["bondfunds"] = 1
+
+    holdings_df = pd.merge(holdings_df, bundfunds, on = "accession_number", how = "left", validate = "m:1")
+    holdings_df = holdings_df[holdings_df["bondfunds"] == 1]
+
+    return holdings_df
+
 def _group_asset_cat_levels(df: pd.DataFrame, bool = True) -> pd.DataFrame:
 
     # df = holdings_df.copy()
@@ -43,15 +58,21 @@ def _group_asset_cat_levels(df: pd.DataFrame, bool = True) -> pd.DataFrame:
 
     return df
 
+
+
 #%% ========== buid portfolio shares ========== %%
 
 def _build_quarterly_portfolio_shares(yq):
     
     ###
-    # yq = "2025q2"
+    # yq = "2020q2"
     ###
 
     holdings_df = load_parquet(PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet")
+
+    # keep bond funds
+    
+    holdings_df = _keep_bond_funds(holdings_df)
 
     # group asset cat levels
 

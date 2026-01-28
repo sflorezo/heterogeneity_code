@@ -34,9 +34,13 @@ def _funds_that_hold_bonds_inquarter(yq : str) -> pd.DataFrame:
 
     return hold_bonds_df
 
-#%% ========== Main Sample Selector ========== %%#
+#%% ========== create funds that hold bonds ========== %%#
 
-def funds_that_hold_bonds():
+def create_funds_that_hold_bonds_list():
+
+    '''
+    Fundtion that creates list of funds that hold bonds, in paralell
+    '''
 
     quarters = (
             pd
@@ -55,3 +59,10 @@ def funds_that_hold_bonds():
     print("Saved PROJECT_TEMP/NPORT_funds_that_hold_bonds.parquet")
 
 
+#%% ========== call list of funds that hold bonds ========== %%#
+
+def funds_that_hold_bonds_list():
+
+    bondfunds = load_parquet(PROJECT_TEMP / f"NPORT_funds_that_hold_bonds.parquet")
+
+    return bondfunds
