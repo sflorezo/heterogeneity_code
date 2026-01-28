@@ -19,6 +19,12 @@ joblib_verbose = CONFIGS["GENERAL"]["batch_job_verbose"]
 
 def _funds_that_hold_bonds_inquarter(yq : str) -> pd.DataFrame:
 
+    ####
+    # yq = "2024q4"
+    ####
+
+    # holdings data (to see who holds bonds)
+
     holdings_df = load_parquet(PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet")
 
     holdings_df["hold_bonds"] = holdings_df["asset_cat"] == "DBT"
@@ -31,6 +37,14 @@ def _funds_that_hold_bonds_inquarter(yq : str) -> pd.DataFrame:
         .drop_duplicates()
         .reset_index(drop = True)
     )
+
+    # merge with fund_id
+
+    fund_info_df = load_parquet(PROCESSED_NPORT / f"NPORT_funds_allQuarters.parquet")
+    fund_info_df = fund_info_df[["accession_number", "quarterly", "fund_id"]]
+
+    hold_bonds_df = hold_bonds_df.merge(fund_info_df, on = ["accession_number", "quarterly"], how = "left")
+    hold_bonds_df = hold_bonds_df[["fund_id", "quarterly"]].drop_duplicates()
 
     return hold_bonds_df
 

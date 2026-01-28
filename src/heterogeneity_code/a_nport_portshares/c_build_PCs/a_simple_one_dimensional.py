@@ -66,7 +66,24 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
 
     df = df.rename(columns={"w": "s"})
 
-    #--- compute bilateral contrasts ----#
+    #--- one-dimensional cross-sectional weights ----#
+
+    df = df[["accession_number", "fund_id", "asset_bucket", "s"]]
+    df = (
+        df
+        .pivot(
+            columns = ["asset_bucket"], 
+            index = ["accession_number", "fund_id"], 
+            values = ["s"]
+        )
+    )
+    df.columns = df.columns.get_level_values(1)
+    df.columns.name = None
+    df.reset_index(inplace = True)
+    df.iloc[:,1:] = df.iloc[:,1:].apply(lambda x : x.fillna(0))
+
+
+
 
     mask = df["fund_id"].duplicated()
 
@@ -165,7 +182,13 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
 
 def fullpanel_build_Cij_PC():
 
-    df = load_parquet(PROJECT_TEMP / "NPORT_assetcat_portfolioshares.parquet")
+    # packages
+
+    from heterogeneity_code.a_nport_portshares.b_build_port_weights.build_port_weights import portfolio_weights_df
+
+    # load data
+    
+    df = portfolio_weights_df()
 
     df_list = [
         df[df["quarterly"] == yq]

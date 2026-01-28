@@ -1,11 +1,18 @@
 #%% ========== configs ========== %%#
 
+# FIXME: These parameters should not be used in a final clean version
+
+checks = False
+
+#%% ========== configs ========== %%#
+
 from heterogeneity_code.configs import CONFIGS
 from typing import cast, Dict
 from pysfo.basic import load_parquet, save_parquet, relocate_columns
 import pandas as pd
 from joblib import Parallel, delayed 
 import numpy as np
+import matplotlib.pyplot as plt
 
 # from pysfo.basic import *
 
@@ -25,10 +32,10 @@ def _keep_bond_funds(holdings_df: pd.DataFrame) -> pd.DataFrame:
 
     from heterogeneity_code.a_nport_portshares.a_select_sample.funds_that_hold_bonds import funds_that_hold_bonds_list
 
-    bundfunds = funds_that_hold_bonds_list()
-    bundfunds["bondfunds"] = 1
+    bondfunds = funds_that_hold_bonds_list()
+    bondfunds["bondfunds"] = 1
 
-    holdings_df = pd.merge(holdings_df, bundfunds, on = "accession_number", how = "left", validate = "m:1")
+    holdings_df = pd.merge(holdings_df, bondfunds, on = ["accession_number", "quarterly"], how = "left", validate = "m:1")
     holdings_df = holdings_df[holdings_df["bondfunds"] == 1]
 
     return holdings_df
@@ -40,7 +47,7 @@ def _group_asset_cat_levels(df: pd.DataFrame, bool = True) -> pd.DataFrame:
     issuer = df["issuer_type"].astype("string").str.upper()
     act    = df["asset_cat_type"].astype("string").str.lower()
 
-    df["asset_bucket"] = np.select(
+    asset_bucket = np.select(
         [
             issuer.isin(["USGSE", "USGA", "UST"]) & act.eq("debt"),  # 1) sovereign debt
             issuer.eq("CORP") & act.eq("debt"),                     # 2) corporate debt
@@ -55,6 +62,14 @@ def _group_asset_cat_levels(df: pd.DataFrame, bool = True) -> pd.DataFrame:
         ],
         default="other",                                            # 5) other
     )
+
+    if bool == True:
+
+        df["asset_bucket"] = asset_bucket
+
+    else :
+
+        df["asset_bucket"] = df["asset_cat"]
 
     return df
 
@@ -72,7 +87,7 @@ def _build_quarterly_portfolio_shares(yq):
 
     # group asset cat levels
 
-    holdings_df = _group_asset_cat_levels(holdings_df)
+    holdings_df = _group_asset_cat_levels(holdings_df, bool = True)
 
     # collapse at asset_cat_level
 
@@ -137,7 +152,7 @@ def build_portf_weights():
 
 #%% ========== import portfolio weights dataset ========== %%#
 
-def portfolio_weights_df(type = ""):
+def portfolio_weights_df(type = "bond_funds"):
 
     df = load_parquet(PROJECT_TEMP / "NPORT_assetcat_portfolioshares.parquet")
 
@@ -148,6 +163,18 @@ def portfolio_weights_df(type = ""):
     elif type == "all" :
         pass
 
-   
+    df = (
+        df.groupby(["fund_id", "quarterly", ""])
+    )
 
     return df    
+
+#%% ========== checks ========== %%#
+
+if checks:
+
+    df = portfolio_weights_df()
+
+    _plot = df["w"][(df["w"] >= np.quantile(df["w"], 0.01)) & (df["w"] <= np.quantile(df["w"], 0.99))]
+
+    plt.hist(_plot)
