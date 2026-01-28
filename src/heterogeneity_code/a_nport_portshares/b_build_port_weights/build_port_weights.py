@@ -70,17 +70,13 @@ def _build_quarterly_portfolio_shares(yq):
 
     holdings_df = load_parquet(PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet")
 
-    # keep bond funds
-    
-    holdings_df = _keep_bond_funds(holdings_df)
-
     # group asset cat levels
 
     holdings_df = _group_asset_cat_levels(holdings_df)
 
     # collapse at asset_cat_level
 
-    fund_ids = ["fund_id", "quarterly"]
+    fund_ids = ["accession_number", "fund_id", "quarterly"]
     asset_cat_ids = ["asset_bucket"] # ["asset_cat", "asset_cat_type", "asset_cat_desc"]
     fund_vars = [
         item for item in
@@ -138,3 +134,20 @@ def build_portf_weights():
 
     save_parquet(df, PROJECT_TEMP / "NPORT_assetcat_portfolioshares.parquet")
     print("Saved PROJECT_TEMP/NPORT_assetcat_portfolioshares.parquet")
+
+#%% ========== import portfolio weights dataset ========== %%#
+
+def portfolio_weights_df(type = ""):
+
+    df = load_parquet(PROJECT_TEMP / "NPORT_assetcat_portfolioshares.parquet")
+
+    # select type
+    
+    if type == "bond_funds":
+        df = _keep_bond_funds(df)
+    elif type == "all" :
+        pass
+
+   
+
+    return df    
