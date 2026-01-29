@@ -35,7 +35,7 @@ def _keep_bond_funds(holdings_df: pd.DataFrame) -> pd.DataFrame:
     bondfunds = funds_that_hold_bonds_list()
     bondfunds["bondfunds"] = 1
 
-    holdings_df = pd.merge(holdings_df, bondfunds, on = ["accession_number", "quarterly"], how = "left", validate = "m:1")
+    holdings_df = pd.merge(holdings_df, bondfunds, on = ["fund_id", "quarterly"], how = "left", validate = "m:1")
     holdings_df = holdings_df[holdings_df["bondfunds"] == 1]
 
     return holdings_df
@@ -91,7 +91,7 @@ def _build_quarterly_portfolio_shares(yq):
 
     # collapse at asset_cat_level
 
-    fund_ids = ["accession_number", "fund_id", "quarterly"]
+    fund_ids = ["fund_id", "quarterly"]
     asset_cat_ids = ["asset_bucket"] # ["asset_cat", "asset_cat_type", "asset_cat_desc"]
     fund_vars = [
         item for item in
@@ -152,7 +152,7 @@ def build_portf_weights():
 
 #%% ========== import portfolio weights dataset ========== %%#
 
-def portfolio_weights_df(type = "bond_funds"):
+def portfolio_weights_df(type):
 
     df = load_parquet(PROJECT_TEMP / "NPORT_assetcat_portfolioshares.parquet")
 
@@ -163,17 +163,13 @@ def portfolio_weights_df(type = "bond_funds"):
     elif type == "all" :
         pass
 
-    df = (
-        df.groupby(["fund_id", "quarterly", ""])
-    )
-
     return df    
 
 #%% ========== checks ========== %%#
 
 if checks:
 
-    df = portfolio_weights_df()
+    df = portfolio_weights_df(type = "bond_funds")
 
     _plot = df["w"][(df["w"] >= np.quantile(df["w"], 0.01)) & (df["w"] <= np.quantile(df["w"], 0.99))]
 

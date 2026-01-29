@@ -1,7 +1,6 @@
 #%% ========== params ========== %%#
 # FIXME: Params
 
-_lambda = 1e-4
 
 #%% ========== uplload libraries ========== %%#
 
@@ -68,103 +67,31 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
 
     #--- one-dimensional cross-sectional weights ----#
 
-    df = df[["accession_number", "fund_id", "asset_bucket", "s"]]
-    df = (
-        df
+    W = df[["fund_id", "asset_bucket", "s"]].copy()
+    W = (
+        W
         .pivot(
             columns = ["asset_bucket"], 
-            index = ["accession_number", "fund_id"], 
+            index = ["fund_id"], 
             values = ["s"]
         )
     )
-    df.columns = df.columns.get_level_values(1)
-    df.columns.name = None
-    df.reset_index(inplace = True)
-    df.iloc[:,1:] = df.iloc[:,1:].apply(lambda x : x.fillna(0))
+    W.columns = W.columns.get_level_values(1)
+    W.columns.name = None
+    W.reset_index(inplace = True)
+    W.iloc[:,1:] = W.iloc[:,1:].apply(lambda x : x.fillna(0))
 
-
-
-
-    mask = df["fund_id"].duplicated()
-
-    all_funds = df[~mask][["fund_id", "fund_total_assets"]]
-    all_funds["fund_weight"] = all_funds["fund_total_assets"] / all_funds["fund_total_assets"].max()
-    all_asset_buckets = df[["asset_bucket"]].drop_duplicates()
-
-    bilateral = all_asset_buckets.merge(all_asset_buckets, how = "cross")
-    bilateral = all_funds.merge(bilateral, how = "cross")
-    
-    bilateral = (
-        bilateral.rename(
-            columns = {
-                "asset_bucket_x" : "asset_bucket_i",
-                "asset_bucket_y" : "asset_bucket_j"
-            }
-        )
-    )
-
-    for i in ["i", "j"]:
-
-        bilateral = (
-            bilateral.merge(
-                df[["fund_id", "asset_bucket", "s", "currency_value"]],
-                left_on = ["fund_id", f"asset_bucket_{i}"],
-                right_on = ["fund_id", "asset_bucket"],
-                how = "left",
-                validate = "m:1"
-            )
-            .drop(columns = "asset_bucket")
-        )
-
-        bilateral["s"] = bilateral["s"].fillna(0)
-        bilateral["currency_value"] = bilateral["currency_value"].fillna(0)
-        bilateral.rename(columns = {
-            "s": f"s_{i}",
-            "currency_value" : f"currency_value_{i}"
-        }, inplace = True)
-
-    # drop non-informative positons (decide not to do for now)
-
-    # mask = (bilateral["s_i"] == 0) & (bilateral["s_j"] == 0)
-    # bilateral = bilateral[~mask].copy()
-
-    # compute bilateral contrasts
-
-    bilateral["_c_ij_pre_w"] = bilateral["currency_value_i"].abs() + bilateral["currency_value_j"].abs()
-    bilateral["_c_ij_w_denom"] = bilateral.groupby("fund_id")["_c_ij_pre_w"].transform("sum")
-    bilateral["_c_ij_w"] = bilateral["_c_ij_pre_w"] / bilateral["_c_ij_w_denom"]
-    
-    bilateral["c_ij"] = (
-        (bilateral["_c_ij_w"]) * 
-        (bilateral["s_i"] - bilateral["s_j"]) / ( bilateral["s_i"] + bilateral["s_j"] + _lambda)
-    )
-
-    _cij_min = bilateral["c_ij"].quantile(0.01)
-    _cij_max = bilateral["c_ij"].quantile(0.99)
-    bilateral["c_ij"] = np.where(bilateral["c_ij"] < _cij_min, _cij_min, bilateral["c_ij"])
-    bilateral["c_ij"] = np.where(bilateral["c_ij"] > _cij_max, _cij_max, bilateral["c_ij"])
-
-    # bilateral contrast (C_ij) matrix
-
-    bilateral.drop(columns = bilateral.filter(regex = r"^_c_ij").columns, inplace = True)
-    bilateral.drop(columns = bilateral.filter(regex = r"^currency_value").columns, inplace = True)
-    bilateral.drop(columns = bilateral.filter(regex = r"^s_").columns, inplace = True)
-
-    C_ij = (
-        bilateral[["fund_id", "asset_bucket_i", "asset_bucket_j", "c_ij"]]
-        .pivot_table(values = "c_ij",
-                    index = "fund_id",
-                    columns = ["asset_bucket_i", "asset_bucket_j"])
-    )
+    W = W.copy()
+    W.set_index("fund_id", inplace = True)
 
     #--- Get principal components ----#
 
-    K = 10
+    K = 5
     pca = PCA(n_components=K, random_state=cast(int, random_seed))
 
-    X_pc = pca.fit_transform(C_ij)
-    X_pc = pd.DataFrame(X_pc, columns = [f"pc_{i}" for i in range(1, 11)])
-    X_pc.index = C_ij.index
+    X_pc = pca.fit_transform(W)
+    X_pc = pd.DataFrame(X_pc, columns = [f"pc_{i}" for i in range(1, K + 1)])
+    X_pc.index = W.index
     X_pc = X_pc.reset_index()
 
     # pca.explained_variance_ratio_
@@ -188,7 +115,7 @@ def fullpanel_build_Cij_PC():
 
     # load data
     
-    df = portfolio_weights_df()
+    df = portfolio_weights_df(type = "bond_funds")
 
     df_list = [
         df[df["quarterly"] == yq]
