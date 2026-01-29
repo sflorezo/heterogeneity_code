@@ -7,6 +7,7 @@ from pysfo.basic import load_parquet
 from matplotlib import pyplot as plt
 import pandas as pd
 from heterogeneity_code.a_nport_portshares.b_check_PCs.a_preliminary.a_merge_PCs_and_funds import fetch_PCs_with_fund_info
+from heterogeneity_code.a_nport_portshares.a_build_PCs.b_build_port_weights.build_port_weights import portfolio_weights_df
 
 # from pysfo.basic import *
 
@@ -50,24 +51,73 @@ For each quarter, find funds with
 For each of those funds, find their holdings and plot them in the time series.
 '''
 
-
-
-
 pc = "pc_1"
 
-
-fund_ids = (
-    df[["fund_id", "series_name", "quarterly", "fund_total_assets"]]
-    .sort_values(by = ["fund_id", "series_name", "quarterly"])
-    .groupby(["fund_id"])
-    .last()
-    .reset_index()
+df_pc_high = (
+    df
+    .assign(
+        q90=df.groupby("quarterly")[pc].transform("quantile", 0.9)
+    )
+    .loc[lambda x: x[pc] >= x["q90"]]
+    .drop(columns="q90")
 )
 
-mask0 = fund_ids["series_name"].isna()
-fund_ids = fund_ids[~mask0]
+df_pc_low = (
+    df
+    .assign(
+        q10=df.groupby("quarterly")[pc].transform("quantile", 0.1)
+    )
+    .loc[lambda x: x[pc] <= x["q10"]]
+    .drop(columns="q10")
+)
 
 
+df_w = portfolio_weights_df(type = "bond_funds")[["fund_id", "quarterly", "w", "asset_bucket"]]
+
+#---- pc_high
+
+df_pc_high = df_pc_high[["fund_id", "quarterly", "series_name"]].merge(df_w, on = ["fund_id", "quarterly"], validate = "1:m", how = "left")
+
+# 1) aggregate -> wide table
+wide = (df_pc_high
+        .groupby(["quarterly", "asset_bucket"], as_index=False)["w"].sum()
+        .pivot(index="quarterly", columns="asset_bucket", values="w")
+        .fillna(0)
+        .sort_index())
+
+# 2) nice x-axis (if quarterly is a Period or '2019Q4' strings)
+wide.index = wide.index.to_timestamp() if hasattr(wide.index, "to_timestamp") else wide.index
+
+# 3) stacked plot (bar)
+ax = wide.plot(kind="bar", stacked=True, figsize=(12, 5), width=0.9)
+ax.set_xlabel("")
+ax.set_ylabel("w")
+ax.legend(title="asset_bucket", bbox_to_anchor=(1.02, 1), loc="upper left")
+plt.tight_layout()
+plt.show()
+
+
+#---- pc_low
+
+df_pc_low = df_pc_low[["fund_id", "quarterly", "series_name"]].merge(df_w, on = ["fund_id", "quarterly"], validate = "1:m", how = "left")
+
+# 1) aggregate -> wide table
+wide = (df_pc_low
+        .groupby(["quarterly", "asset_bucket"], as_index=False)["w"].sum()
+        .pivot(index="quarterly", columns="asset_bucket", values="w")
+        .fillna(0)
+        .sort_index())
+
+# 2) nice x-axis (if quarterly is a Period or '2019Q4' strings)
+wide.index = wide.index.to_timestamp() if hasattr(wide.index, "to_timestamp") else wide.index
+
+# 3) stacked plot (bar)
+ax = wide.plot(kind="bar", stacked=True, figsize=(12, 5), width=0.9)
+ax.set_xlabel("")
+ax.set_ylabel("w")
+ax.legend(title="asset_bucket", bbox_to_anchor=(1.02, 1), loc="upper left")
+plt.tight_layout()
+plt.show()
 
 
 #%% ========== See some important funds ========== %%#

@@ -40,14 +40,14 @@ def _keep_bond_funds(holdings_df: pd.DataFrame) -> pd.DataFrame:
 
     return holdings_df
 
-def _group_asset_cat_levels(df: pd.DataFrame, bool = True) -> pd.DataFrame:
+def _group_asset_cat_levels(df: pd.DataFrame, aggregation_level) -> pd.DataFrame:
 
     # df = holdings_df.copy()
     
     issuer = df["issuer_type"].astype("string").str.upper()
     act    = df["asset_cat_type"].astype("string").str.lower()
 
-    asset_bucket = np.select(
+    asset_bucket_lv0 = np.select(
         [
             issuer.isin(["USGSE", "USGA", "UST"]) & act.eq("debt"),  # 1) sovereign debt
             issuer.eq("CORP") & act.eq("debt"),                     # 2) corporate debt
@@ -63,21 +63,22 @@ def _group_asset_cat_levels(df: pd.DataFrame, bool = True) -> pd.DataFrame:
         default="other",                                            # 5) other
     )
 
-    if bool == True:
+    asset_bucket_lv99 = df["asset_cat"]
 
-        df["asset_bucket"] = asset_bucket
+    if aggregation_level == 0:
 
-    else :
+        df["asset_bucket"] = asset_bucket_lv0
 
-        df["asset_bucket"] = df["asset_cat"]
+    elif aggregation_level == 99 :
+
+        df["asset_bucket"] = asset_bucket_lv99
 
     return df
 
 
-
 #%% ========== buid portfolio shares ========== %%
 
-def _build_quarterly_portfolio_shares(yq):
+def _build_quarterly_portfolio_shares(yq, aggregation_level):
     
     ###
     # yq = "2020q2"
@@ -87,7 +88,7 @@ def _build_quarterly_portfolio_shares(yq):
 
     # group asset cat levels
 
-    holdings_df = _group_asset_cat_levels(holdings_df, bool = True)
+    holdings_df = _group_asset_cat_levels(holdings_df, aggregation_level = aggregation_level)
 
     # collapse at asset_cat_level
 
@@ -132,7 +133,7 @@ def _build_quarterly_portfolio_shares(yq):
 
 #%% ========== build_portf_weights ========== %%#
 
-def build_portf_weights():
+def build_portf_weights(aggregation_level):
 
     quarters = (
             pd
@@ -142,13 +143,14 @@ def build_portf_weights():
         )
 
     df_list = Parallel(n_jobs = joblib_n_workers, verbose = joblib_verbose)(
-            delayed(_build_quarterly_portfolio_shares)(q) for q in quarters
+            delayed(_build_quarterly_portfolio_shares)(q, aggregation_level = aggregation_level) for q in quarters
         )
 
     df = pd.concat(df_list, axis = 0)
 
-    save_parquet(df, PROJECT_TEMP / "NPORT_assetcat_portfolioshares.parquet")
-    print("Saved PROJECT_TEMP/NPORT_assetcat_portfolioshares.parquet")
+
+    save_parquet(df, PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_aggLvl{aggregation_level}.parquet")
+    print(f"Saved PROJECT_TEMP/NPORT_assetcat_portfolioshares_aggLvl{aggregation_level}.parquet")
 
 #%% ========== import portfolio weights dataset ========== %%#
 
