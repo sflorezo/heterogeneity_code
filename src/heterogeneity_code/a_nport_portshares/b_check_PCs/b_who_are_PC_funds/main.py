@@ -42,6 +42,16 @@ plt.show()
 
 #%% ========= See who are the main funds identified by components ========== %%#
 
+'''
+For each quarter, find funds with
+1. greater weight of each PC
+2. smallest weight of each PC
+
+For each of those funds, find their holdings and plot them in the time series.
+'''
+
+
+
 
 pc = "pc_1"
 
