@@ -107,11 +107,11 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
 
 #%% ========== fullpanel_build_Cij_PC ========== %%#
 
-def fullpanel_build_Cij_PC():
+def fullpanel_build_PC():
 
     # packages
 
-    from heterogeneity_code.a_nport_portshares.b_build_port_weights.build_port_weights import portfolio_weights_df
+    from heterogeneity_code.a_nport_portshares.a_build_PCs.b_build_port_weights.build_port_weights import portfolio_weights_df
 
     # load data
     
