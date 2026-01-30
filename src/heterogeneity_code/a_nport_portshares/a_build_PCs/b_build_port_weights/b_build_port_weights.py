@@ -48,6 +48,9 @@ def _group_asset_cat_levels(df: pd.DataFrame, aggregation_level) -> pd.DataFrame
         asset_bucket_lv_99
     )
 
+    if aggregation_level not in [0, 1, 99]:
+        raise ValueError("aggregation_level must be 0, 1, or 99.")
+
     if aggregation_level == 0:
 
         df["asset_bucket"] = asset_bucket_lv_0(df)

@@ -107,7 +107,7 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
 
 #%% ========== fullpanel_build_Cij_PC ========== %%#
 
-def fullpanel_build_PC():
+def fullpanel_build_PC(aggregation_level):
 
     # packages
 
@@ -115,7 +115,7 @@ def fullpanel_build_PC():
 
     # load data
     
-    df = portfolio_weights_df(type = "bond_funds", aggregation_level = 1)
+    df = portfolio_weights_df(type = "bond_funds", aggregation_level = aggregation_level)
 
     df_list = [
         df[df["quarterly"] == yq]
@@ -148,5 +148,5 @@ def fullpanel_build_PC():
     
     # save
     
-    save_parquet(df, PROJECT_TEMP / "PC_assetcat_Cij_funds.parquet")
-    print("Saved PROJECT_TEMP/PC_assetcat_Cij_funds.parquet")
+    save_parquet(df, PROJECT_TEMP / f"PC_assetcat_funds_aggLvl_{aggregation_level}.parquet")
+    print(f"Saved PROJECT_TEMP/PC_assetcat_funds_aggLvl_{aggregation_level}.parquet")
