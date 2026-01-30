@@ -115,7 +115,7 @@ def fullpanel_build_PC():
 
     # load data
     
-    df = portfolio_weights_df(type = "bond_funds")
+    df = portfolio_weights_df(type = "bond_funds", aggregation_level = 0)
 
     df_list = [
         df[df["quarterly"] == yq]

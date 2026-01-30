@@ -3,6 +3,10 @@
 __________
 # Where we at?
 
-2025-12-31
+2026-01-29
 
-I am trying to see if anything can be identified from pricipal components of holdings bilateral contrasts Cij. Main current work scripts are inside [src/heterogeneity_code/a_nport_portshares/assetcat_port_shares/](src/heterogeneity_code/a_nport_portshares/assetcat_port_shares/). This folder tries to build asset category level portshares to see if any interesting variation arise from it.
+- Can the variation in important asset classes prices be explained by the variation in funds holdings principal components? How?
+
+<img src="_imagesdump/2026-01-29-17-07-18.png" width="650" />
+
+Cross-sectional geometries of the first PCs using simple asset categories (sov debt, corp debt, loans, others)

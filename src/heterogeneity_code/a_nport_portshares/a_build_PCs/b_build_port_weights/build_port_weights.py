@@ -154,9 +154,9 @@ def build_portf_weights(aggregation_level):
 
 #%% ========== import portfolio weights dataset ========== %%#
 
-def portfolio_weights_df(type):
+def portfolio_weights_df(type, aggregation_level):
 
-    df = load_parquet(PROJECT_TEMP / "NPORT_assetcat_portfolioshares.parquet")
+    df = load_parquet(PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_aggLvl{aggregation_level}.parquet")
 
     # select type
     
@@ -171,7 +171,7 @@ def portfolio_weights_df(type):
 
 if checks:
 
-    df = portfolio_weights_df(type = "bond_funds")
+    df = portfolio_weights_df(type = "bond_funds", aggregation_level = 0)
 
     _plot = df["w"][(df["w"] >= np.quantile(df["w"], 0.01)) & (df["w"] <= np.quantile(df["w"], 0.99))]
 
