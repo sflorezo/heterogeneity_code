@@ -111,11 +111,11 @@ def fullpanel_build_PC():
 
     # packages
 
-    from heterogeneity_code.a_nport_portshares.a_build_PCs.b_build_port_weights.build_port_weights import portfolio_weights_df
+    from heterogeneity_code.a_nport_portshares.a_build_PCs.b_build_port_weights.b_build_port_weights import portfolio_weights_df
 
     # load data
     
-    df = portfolio_weights_df(type = "bond_funds", aggregation_level = 0)
+    df = portfolio_weights_df(type = "bond_funds", aggregation_level = 1)
 
     df_list = [
         df[df["quarterly"] == yq]

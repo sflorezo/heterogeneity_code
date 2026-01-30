@@ -42,36 +42,23 @@ def _keep_bond_funds(holdings_df: pd.DataFrame) -> pd.DataFrame:
 
 def _group_asset_cat_levels(df: pd.DataFrame, aggregation_level) -> pd.DataFrame:
 
-    # df = holdings_df.copy()
-    
-    issuer = df["issuer_type"].astype("string").str.upper()
-    act    = df["asset_cat_type"].astype("string").str.lower()
-
-    asset_bucket_lv0 = np.select(
-        [
-            issuer.isin(["USGSE", "USGA", "UST"]) & act.eq("debt"),  # 1) sovereign debt
-            issuer.eq("CORP") & act.eq("debt"),                     # 2) corporate debt
-            act.eq("equity"),                                       # 3) equity
-            act.eq("loans"),                                        # 4) loans
-        ],
-        [
-            "sovereign debt",
-            "corporate debt",
-            "equity",
-            "loans",
-        ],
-        default="other",                                            # 5) other
+    from heterogeneity_code.a_nport_portshares.a_build_PCs.b_build_port_weights.a_build_asset_bucket_helpfuns import (
+        asset_bucket_lv_0,
+        asset_bucket_lv_1,
+        asset_bucket_lv_99
     )
-
-    asset_bucket_lv99 = df["asset_cat"]
 
     if aggregation_level == 0:
 
-        df["asset_bucket"] = asset_bucket_lv0
+        df["asset_bucket"] = asset_bucket_lv_0(df)
+
+    if aggregation_level == 1:
+
+        df["asset_bucket"] = asset_bucket_lv_1(df)
 
     elif aggregation_level == 99 :
 
-        df["asset_bucket"] = asset_bucket_lv99
+        df["asset_bucket"] = asset_bucket_lv_99(df)
 
     return df
 
@@ -147,8 +134,7 @@ def build_portf_weights(aggregation_level):
         )
 
     df = pd.concat(df_list, axis = 0)
-
-
+    
     save_parquet(df, PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_aggLvl{aggregation_level}.parquet")
     print(f"Saved PROJECT_TEMP/NPORT_assetcat_portfolioshares_aggLvl{aggregation_level}.parquet")
 
