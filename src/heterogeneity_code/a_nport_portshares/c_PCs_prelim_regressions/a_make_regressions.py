@@ -6,6 +6,7 @@
 # FIXME: temporal params
 
 do_check_figs = False
+generate_regressions = False
 
 #%% ========== configs ========== %%#
 
@@ -23,6 +24,7 @@ import pandas as pd
 
 PROCESSED_NPORT = CONFIGS["PATHS"]["PROCESSED_NPORT"]
 PROJECT_TEMP = CONFIGS["PATHS"]["PROJECT_TEMP"]
+OUT_PATH = CONFIGS["PATHS"]["OUT_PATH"]
 
 random_seed = CONFIGS["GENERAL"]["random_seed"]
 n_workers = CONFIGS["GENERAL"]["n_workers"]
@@ -169,10 +171,80 @@ def _generate_regression_results():
     print(f"Regression results saved to $PROJECT_TEMP/regression_results_{_start_quarter}_{_end_quarter}.parquet")
 
 
+# %% ========== generate regressions ========== %% #
+
+if generate_regressions:
+    _generate_regression_results()
+
+
 # %% ========== generate figures ========== %% #
 
-
-_generate_regression_results()
-
+df = load_parquet(PROJECT_TEMP / f"regression_results_2019q4_2025q4.parquet")
 
 
+for _pc in ["pc_1", "pc_2", "pc_3", "pc_4", "pc_5"]:
+
+    _pc_label = _pc.upper().replace("_", " ")
+
+    pc = df.loc[df["parameter"].eq(_pc),
+                ["quarter", "params_DM", "params_EM", "bse_DM", "bse_EM"]].copy()
+
+
+    # Ensure correct quarter ordering (expects strings like "2019q4")
+    q = pc["quarter"].astype(str).str.lower().str.replace("q", "Q")
+    pc["_period"] = pd.PeriodIndex(q, freq="Q")
+    pc = pc.sort_values("_period")
+    periods = pc["_period"]
+
+    x = np.arange(len(pc))
+    dx = 0.14  # horizontal offset: EM left, DM right
+
+    y_em = pc["params_EM"].to_numpy()
+    y_dm = pc["params_DM"].to_numpy()
+    err_em = (1.9 * pc["bse_EM"]).to_numpy()
+    err_dm = (1.9 * pc["bse_DM"]).to_numpy()
+
+    fig, ax = plt.subplots(figsize=(11, 4.8))
+
+    ax.errorbar(x - dx, y_em, yerr=err_em, fmt="o", capsize=3, label="EM")
+    ax.errorbar(x + dx, y_dm, yerr=err_dm, fmt="o", capsize=3, label="DM")
+
+    ax.axhline(0, linewidth=1, color = "gray", alpha = 0.3)
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(
+        pc["_period"].astype(str).str.replace("Q", "q"),
+        rotation=45, ha="right"
+    )
+    ax.tick_params(axis="both", labelsize=12)
+
+    ax.set_xlabel("")
+    ax.set_ylabel(f"Coef. on {_pc_label}", fontsize = 15)
+    ax.set_title(f"{_pc_label} coefficients by quarter (± 1.96 × SE)", fontsize = 15)
+    ax.legend()
+
+    ax.set_axisbelow(True)
+    ax.grid(
+        True,
+        which="both",
+        axis="both",
+        linestyle="--",
+        linewidth=0.6,
+        alpha=0.35,
+    )
+
+    ax.set_xticks(x)
+    ax.set_xticklabels([
+        str(p).replace("Q", "q") if p.quarter == 1 else ""
+        for p in periods
+    ])
+
+    fig.tight_layout()
+    plt.savefig(OUT_PATH / f"EM_DM_regs_{_pc}.pdf")
+    print(f"Saved OUT_PATH/EM_DM_regs_{_pc}.pdf")
+    # plt.close(fig)
+    # plt.show()
+
+
+
+# %%

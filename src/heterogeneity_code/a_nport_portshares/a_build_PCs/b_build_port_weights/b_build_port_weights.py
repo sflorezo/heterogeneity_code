@@ -144,7 +144,6 @@ def portfolio_weights_df(type, aggregation_level):
 
     df = load_parquet(PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_aggLvl{aggregation_level}.parquet")
 
-
     # select type
     
     if type == "bond_funds":
