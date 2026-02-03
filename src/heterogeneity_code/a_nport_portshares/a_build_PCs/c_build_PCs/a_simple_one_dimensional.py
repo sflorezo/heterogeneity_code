@@ -148,5 +148,5 @@ def fullpanel_build_PC(aggregation_level):
     
     # save
     
-    save_parquet(df, PROJECT_TEMP / f"PC_assetcat_funds_aggLvl_{aggregation_level}.parquet")
-    print(f"Saved PROJECT_TEMP/PC_assetcat_funds_aggLvl_{aggregation_level}.parquet")
+    save_parquet(df, PROJECT_TEMP / f"PC_assetcat_funds_aggLvl{aggregation_level}.parquet")
+    print(f"Saved PROJECT_TEMP/PC_assetcat_funds_aggLvl{aggregation_level}.parquet")

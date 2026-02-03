@@ -48,9 +48,6 @@ def _group_asset_cat_levels(df: pd.DataFrame, aggregation_level) -> pd.DataFrame
         asset_bucket_lv_99
     )
 
-    if aggregation_level not in [0, 1, 99]:
-        raise ValueError("aggregation_level must be 0, 1, or 99.")
-
     if aggregation_level == 0:
 
         df["asset_bucket"] = asset_bucket_lv_0(df)
@@ -131,7 +128,7 @@ def build_portf_weights(aggregation_level):
                         process_quarters["end"].upper(), freq="Q")
             .astype(str).str.lower().tolist()
         )
-
+    
     df_list = Parallel(n_jobs = joblib_n_workers, verbose = joblib_verbose)(
             delayed(_build_quarterly_portfolio_shares)(q, aggregation_level = aggregation_level) for q in quarters
         )
@@ -146,6 +143,7 @@ def build_portf_weights(aggregation_level):
 def portfolio_weights_df(type, aggregation_level):
 
     df = load_parquet(PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_aggLvl{aggregation_level}.parquet")
+
 
     # select type
     

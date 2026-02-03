@@ -1,7 +1,6 @@
 # pyright: reportAttributeAccessIssue=false
 # pyright: reportArgumentType=false
 
-
 #%% ========= imports ========== %%#
 
 from heterogeneity_code.configs import CONFIGS
@@ -9,17 +8,19 @@ from pysfo.basic import load_parquet
 from matplotlib import pyplot as plt
 import pandas as pd
 from heterogeneity_code.a_nport_portshares.b_check_PCs.a_preliminary.a_merge_PCs_and_funds import fetch_PCs_with_fund_info
-from heterogeneity_code.a_nport_portshares.a_build_PCs.b_build_port_weights.build_port_weights import portfolio_weights_df
+from heterogeneity_code.a_nport_portshares.a_build_PCs.b_build_port_weights.b_build_port_weights import portfolio_weights_df
 import numpy as np
+from matplotlib.ticker import MultipleLocator
 
 # from pysfo.basic import *
 
 PROCESSED_NPORT = CONFIGS["PATHS"]["PROCESSED_NPORT"]
 PROJECT_TEMP = CONFIGS["PATHS"]["PROJECT_TEMP"]
+OUT_PATH = CONFIGS["PATHS"]["OUT_PATH"]
 
 #%% ========= Upload data ========== %%#
 
-df = fetch_PCs_with_fund_info()
+df = fetch_PCs_with_fund_info(aggregation_level = 1)
 
 #%% ========= quarterly mean of PCs ========== %%#
 
@@ -53,6 +54,8 @@ For each quarter, find funds with
 
 For each of those funds, find their holdings and plot them in the time series.
 '''
+
+df = fetch_PCs_with_fund_info(aggregation_level = 1)
 
 pc = "pc_1"
 
@@ -116,70 +119,3 @@ for col in df_pc_low.columns:
     plt.plot(df_pc_low.index.to_timestamp(), df_pc_low[col], label = col)
 plt.legend()
 
-
-
-
-#%% ========== See funds in 2-dimensional space of components ========== %%#
-
-_plot = {}
-
-for q in df["quarterly"].unique():
-
-    _q = df[df["quarterly"] == q]
-
-    drop = (
-        (_q["pc_1"] <= _q["pc_1"].quantile(0.015)) 
-        | (_q["pc_1"] >= _q["pc_1"].quantile(0.985))
-        | (_q["pc_2"] <= _q["pc_2"].quantile(0.015)) 
-        | (_q["pc_2"] >= _q["pc_2"].quantile(0.985))
-    )
-
-    _q = _q[~drop]
-
-    _plot[str(q)] = {
-        "pc_1" : _q["pc_1"],
-        "pc_2" : _q["pc_2"],
-        "w" : (_q["fund_total_assets"]  / _q["fund_total_assets"].max()) * 50
-    }
-    
-    
-    _q[["pc_1", "pc_2"]]
-
-for q in ["2019Q4", "2020Q1", "2020Q2", "2024Q4", "2020Q3", "2020Q4"]:
-    plt.scatter(_plot[q]["pc_1"], _plot[q]["pc_2"], s = _plot[q]["w"], label = q)
-plt.legend()
-
-#%% ========== 3-dimensional ========== %%#
-
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
-
-qs = ["2019Q4", "2020Q1", "2020Q2", "2024Q4", "2020Q3", "2020Q4",
-      "2021Q1", "2021Q2", "2021Q3"]  # order controls depth
-z_map = {q: i for i, q in enumerate(qs)}
-
-fig = plt.figure(figsize=(9, 6))
-ax = fig.add_subplot(111, projection="3d")
-
-for q in qs:
-    z = np.full_like(_plot[q]["pc_1"], fill_value=float(z_map[q]), dtype=float)
-    ax.scatter(
-        _plot[q]["pc_1"],
-        _plot[q]["pc_2"],
-        z,
-        s=_plot[q]["w"],
-        alpha=0.35,
-        depthshade=True,
-        label=q,
-    )
-
-ax.set_xlabel("pc_1")
-ax.set_ylabel("pc_2")
-ax.set_zlabel("quarter (depth)")
-ax.view_init(elev=18, azim=-60)  # tweak
-ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1))
-ax.view_init(elev=15, azim=-110)
-plt.tight_layout()
-plt.show()
-# %%

@@ -4,6 +4,7 @@
 RAW_NPORT = "$DATA_RAW/sec_NPORT"
 PROCESSED_NPORT = "$DATA_WORK/sec_NPORT_work"
 PROJECT_TEMP = "$DATA_TEMP/heterogeneity_temp"
+OUT_PATH = "$HETEROGENEITY_MAIN_PATH/tex/out"
 
 [general]
 random_seed = 42
@@ -13,4 +14,4 @@ SEC_API_KEY="$SEC_API_KEY"
 DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY"
 
 [nport]
-process_quarters = { start = "2019q4", end = "2025q4" }
+process_quarters = { start = "2025q3", end = "2025q4" } # 2019q4, 2025q4

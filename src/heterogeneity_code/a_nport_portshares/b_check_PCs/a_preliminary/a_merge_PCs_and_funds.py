@@ -12,10 +12,10 @@ PROJECT_TEMP = CONFIGS["PATHS"]["PROJECT_TEMP"]
 
 #%% ========= Upload data ========== %%#
 
-def fetch_PCs_with_fund_info():
+def fetch_PCs_with_fund_info(aggregation_level):
 
-    PC_panel = load_parquet(PROJECT_TEMP / "PC_assetcat_Cij_funds.parquet")
-    fund_level_data = load_parquet(PROCESSED_NPORT / "NPORT_funds_allQuarters.parquet")
+    PC_panel = load_parquet(PROJECT_TEMP / f"PC_assetcat_funds_aggLvl{aggregation_level}.parquet")
+    fund_level_data = load_parquet(PROCESSED_NPORT / f"NPORT_funds_allQuarters.parquet")
 
     fund_level_data = fund_level_data[["fund_id", "quarterly", "fund_total_assets"]]
 
