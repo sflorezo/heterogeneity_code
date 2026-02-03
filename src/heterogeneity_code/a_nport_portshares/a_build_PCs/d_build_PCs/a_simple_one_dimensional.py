@@ -1,7 +1,6 @@
 #%% ========== params ========== %%#
 # FIXME: Params
 
-
 #%% ========== uplload libraries ========== %%#
 
 from heterogeneity_code.configs import CONFIGS
@@ -53,7 +52,7 @@ def _drop_smallest_funds_in_quarter(quarterly_assetcat_shares_df):
 
     return df
     
-def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
+def _quarterly_build_PC(quarterly_assetcat_shares_df):
 
     # quarterly_assetcat_shares_df = df_list[0]
 
@@ -84,6 +83,13 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
     W = W.copy()
     W.set_index("fund_id", inplace = True)
 
+    #--- Normalize data ----#
+
+    W = (W - W.mean()) / W.std()
+
+    drop_col = [True in list(~W[col].isna()) for col in W.columns]
+    W = W.loc[:, drop_col]
+
     #--- Get principal components ----#
 
     K = 5
@@ -100,7 +106,7 @@ def _quarterly_build_Cij_PC(quarterly_assetcat_shares_df):
 
     fund_ids = df[["quarterly", "fund_id", "fund_id_desc", "series_id", "series_lei", "series_name", "registrant_lei", "registrant_name"]].drop_duplicates()
     X_pc_ = pd.merge(fund_ids, X_pc, on = "fund_id")
-
+    
     # X_pc_["quarterly"]
 
     return X_pc_
@@ -138,7 +144,7 @@ def fullpanel_build_PC(aggregation_level):
         n_jobs = n_workers,
         verbose = batch_job_verbose
     )(
-        delayed(_quarterly_build_Cij_PC)(df) 
+        delayed(_quarterly_build_PC)(df) 
         for df in df_list
     )
 
