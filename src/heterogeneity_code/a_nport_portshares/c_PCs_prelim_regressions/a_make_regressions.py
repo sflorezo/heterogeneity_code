@@ -122,10 +122,13 @@ def _generate_regression_results():
 
     results = {}
 
+    _start_quarter = process_quarters["start"]
+    _end_quarter = process_quarters["end"]
+
     quarters = (
             pd
-            .period_range(process_quarters["start"].upper(), 
-                        process_quarters["end"].upper(), freq="Q")
+            .period_range(_start_quarter.upper(), 
+                          _end_quarter.upper(), freq="Q")
             .astype(str).str.lower().tolist()
         )
 
@@ -162,12 +165,14 @@ def _generate_regression_results():
 
     results.reset_index(inplace = True)
 
-    save_parquet(results, PROJECT_TEMP / "regression_results.parquet")
-    print(f"Regression results saved to $PROJECT_TEMP/regression_results.parquet")
+    save_parquet(results, PROJECT_TEMP / f"regression_results_{_start_quarter}_{_end_quarter}.parquet")
+    print(f"Regression results saved to $PROJECT_TEMP/regression_results_{_start_quarter}_{_end_quarter}.parquet")
 
 
-# %% ========== generate regression results for all quarters
+# %% ========== generate figures ========== %% #
 
+
+_generate_regression_results()
 
 
 
