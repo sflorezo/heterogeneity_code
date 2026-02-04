@@ -6,15 +6,17 @@
 
 checks = False
 
-#%% ========== configs ========== %%#
+#%% ========== project-wide configs ========== %%#
 
 from heterogeneity_code.configs import CONFIGS
 from typing import cast, Dict
 from pysfo.basic import load_parquet, save_parquet, relocate_columns
+from pysfo import paralell_utils
 import pandas as pd
 from joblib import Parallel, delayed 
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 # from pysfo.basic import *
 
@@ -25,6 +27,14 @@ joblib_n_workers = CONFIGS["GENERAL"]["n_workers"]
 joblib_verbose = CONFIGS["GENERAL"]["batch_job_verbose"]
 aggregation_level = CONFIGS["NPORT"]["build_PCs"]["aggregation_level"]
 
+#%% ========== script-specific configs ========== %%#
+
+_start_q = process_quarters["start"]
+_end_q = process_quarters["end"]
+portfolio_weights_file = PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet"
+
+#%% ========== Exceptions and Errors ========== %%#
+
 
 #%% ========== helper functions ========== %%
 
@@ -33,9 +43,9 @@ def _keep_bond_funds(holdings_df: pd.DataFrame) -> pd.DataFrame:
     # yq = "2025q2"
     # holdings_df = load_parquet(PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet")
 
-    from heterogeneity_code.a_nport_portshares.a_build_PCs.a_select_sample.funds_that_hold_bonds import funds_that_hold_bonds_list
+    from heterogeneity_code.a_nport_portshares.a_build_PCs.a_select_sample.funds_that_hold_bonds import fetch_funds_that_hold_bonds_list
 
-    bondfunds = funds_that_hold_bonds_list()
+    bondfunds = fetch_funds_that_hold_bonds_list()
     bondfunds["bondfunds"] = 1
 
     holdings_df = pd.merge(holdings_df, bondfunds, on = ["fund_id", "quarterly"], how = "left", validate = "m:1")
@@ -71,7 +81,22 @@ def _build_quarterly_portfolio_shares(yq, aggregation_level):
     # yq = "2020q2"
     ###
 
-    holdings_df = load_parquet(PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet")
+    # function params
+
+    holdings_yq_file = PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet"
+
+    # needed files check
+
+    if not holdings_yq_file.exists():
+        _message = (
+            f"File not found {holdings_yq_file}.\n"
+            "Please run clean_nport before running this function"
+        )
+        raise FileNotFoundError(_message)
+
+    # upload holdings data
+
+    holdings_df = load_parquet(holdings_yq_file)
 
     # group asset cat levels
 
@@ -120,8 +145,21 @@ def _build_quarterly_portfolio_shares(yq, aggregation_level):
 
 def _build_portf_weights(aggregation_level):
 
-    _start_q = process_quarters["start"]
-    _end_q = process_quarters["end"]
+    #---- check that function is not run in paralell
+
+    if paralell_utils.is_nested_parallel():
+
+        _message = (
+            "_build_portf_weights runs in parallel, and cannot itself be called in a paralellized job."
+            "Please check the code and try again."
+        )
+    
+        raise paralell_utils.errors.NestedParallelError(_message)
+
+    #---- paralellize portfolio weight construction
+
+    print("\n")
+    print("Building portfolio weights...")
 
     quarters = (
             pd
@@ -136,41 +174,56 @@ def _build_portf_weights(aggregation_level):
 
     df = pd.concat(df_list, axis = 0)
     
-    save_parquet(df, PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
-    print(f"Saved PROJECT_TEMP/NPORT_assetcat_portfolioshares_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
+    time.sleep(2)
 
-#%% ========== import portfolio weights dataset ========== %%#
+    save_parquet(df, portfolio_weights_file)
+    print(f"-> Saved {portfolio_weights_file}")
 
-def portfolio_weights_df(type, aggregation_level):
+#%% ========== callable functions ========== %%#
 
-    _start_q = process_quarters["start"]
-    _end_q = process_quarters["end"]
+def portfolio_weights_df(keep_fund_type):
 
     try :
-        df = load_parquet(PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
+        
+        df = load_parquet(portfolio_weights_file)
     
     except FileNotFoundError:
 
-        print(f"portfolio_weights_df ({_start_q} - {_end_q}) not found. Creating it now")
-        _build_portf_weights(aggregation_level = aggregation_level)
-        df = load_parquet(PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
+        _message = (
+            f"portfolio_weights_df ({_start_q} - {_end_q}) not found.\n"
+            "Proceeding to build it..."
+        )
+        print(_message)
+        _build_portf_weights(aggregation_level)
+        df = load_parquet(portfolio_weights_file)
 
     # select type
     
-    if type == "bond_funds":
+    if keep_fund_type == "bond_funds":
+
         df = _keep_bond_funds(df)
-    elif type == "all" :
+
+    elif keep_fund_type == "all" :
+
         pass
+    
     else :
+
         raise ValueError("type must be either 'bond_funds' or 'all'")
 
-    return df    
+    return df   
 
 #%% ========== checks ========== %%#
 
 if checks:
 
-    df = portfolio_weights_df(type = "bond_funds", aggregation_level = 0)
+    ###### needed to call first
+    # from heterogeneity_code.a_nport_portshares.a_build_PCs.a_select_sample.funds_that_hold_bonds import create_funds_that_hold_bonds_list
+    # create_funds_that_hold_bonds_list()
+    # build_portf_weights(aggregation_level)
+    ######
+
+    df = portfolio_weights_df(keep_fund_type = "bond_funds")
 
     _plot = df["w"][(df["w"] >= np.quantile(df["w"], 0.01)) & (df["w"] <= np.quantile(df["w"], 0.99))]
 

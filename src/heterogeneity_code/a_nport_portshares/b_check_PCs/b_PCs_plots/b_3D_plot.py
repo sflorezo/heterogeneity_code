@@ -26,7 +26,7 @@ aggregation_level = CONFIGS["NPORT"]["build_PCs"]["aggregation_level"]
 
 #%% ========== See funds in 2-dimensional space of components ========== %%#
 
-df = fetch_PCs_with_fund_info(aggregation_level = aggregation_level)
+df = fetch_PCs_with_fund_info()
 
 _plot = {}
 
@@ -48,7 +48,6 @@ for q in df["quarterly"].unique():
         "pc_2" : _q["pc_2"],
         "w" : (_q["fund_total_assets"]  / _q["fund_total_assets"].max()) * 50
     }
-    
     
     _q[["pc_1", "pc_2"]]
 

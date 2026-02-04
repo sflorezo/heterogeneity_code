@@ -23,7 +23,7 @@ aggregation_level = CONFIGS["NPORT"]["build_PCs"]["aggregation_level"]
 
 #%% ========= Upload data ========== %%#
 
-df = fetch_PCs_with_fund_info(aggregation_level = aggregation_level)
+df = fetch_PCs_with_fund_info()
 
 #%% ========= quarterly mean of PCs ========== %%#
 
@@ -58,7 +58,7 @@ For each quarter, find funds with
 For each of those funds, find their holdings and plot them in the time series.
 '''
 
-df = fetch_PCs_with_fund_info(aggregation_level = aggregation_level)
+df = fetch_PCs_with_fund_info()
 
 pc = "pc_1"
 
@@ -80,7 +80,7 @@ df_pc_low = (
     .drop(columns="q10")
 )
 
-df_w = portfolio_weights_df(type = "bond_funds", aggregation_level = 0)[["fund_id", "quarterly", "w", "asset_bucket"]]
+df_w = portfolio_weights_df(keep_fund_type = "bond_funds")[["fund_id", "quarterly", "w", "asset_bucket"]]
 df_w = (
     df_w.pivot(
     columns = "asset_bucket", 

@@ -1,11 +1,14 @@
-#%% ========== configs ========== %%#
+#%% ========== project-wide configs ========== %%#
 
 from heterogeneity_code.configs import CONFIGS
 from typing import cast, Dict
 from pysfo.basic import load_parquet, save_parquet, relocate_columns
+from pysfo import paralell_utils
 import pandas as pd
-from joblib import Parallel, delayed 
+from joblib import Parallel, delayed
+from joblib.parallel import get_active_backend
 import numpy as np
+import time
 
 # from pysfo.basic import *
 
@@ -15,6 +18,17 @@ process_quarters = cast(Dict, CONFIGS["NPORT"]["process_quarters"])
 joblib_n_workers = CONFIGS["GENERAL"]["n_workers"]
 joblib_verbose = CONFIGS["GENERAL"]["batch_job_verbose"]
 
+#%% ========== script-specific configs ========== %%#
+
+_start_q = process_quarters["start"]
+_end_q = process_quarters["end"]
+funds_that_hold_bonds_file = PROJECT_TEMP / f"NPORT_funds_that_hold_bonds_{_start_q}_{_end_q}.parquet"
+
+#%% ========== Exceptions and Errors ========== %%#
+
+class FundsThatHoldBondsNotFoundError(RuntimeError):
+        pass
+
 #%% ========== Helper Functions ========== %%#
 
 def _funds_that_hold_bonds_inquarter(yq : str) -> pd.DataFrame:
@@ -23,9 +37,24 @@ def _funds_that_hold_bonds_inquarter(yq : str) -> pd.DataFrame:
     # yq = "2024q4"
     ####
 
+    # function params
+
+    holdings_yq_file = PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet"
+    fund_info_df_file = PROCESSED_NPORT / f"NPORT_funds_allQuarters.parquet"
+
+    # needed files check
+
+    for file in [holdings_yq_file, fund_info_df_file]:
+        if not file.exists():
+            _message = (
+                f"File not found {file}.\n"
+                "Please run clean_nport before running this function"
+            )
+            raise FileNotFoundError(_message)
+
     # holdings data (to see who holds bonds)
 
-    holdings_df = load_parquet(PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet")
+    holdings_df = load_parquet(holdings_yq_file)
 
     holdings_df["hold_bonds"] = holdings_df["asset_cat"] == "DBT"
     holdings_df["hold_bonds"] = (
@@ -40,7 +69,7 @@ def _funds_that_hold_bonds_inquarter(yq : str) -> pd.DataFrame:
 
     # merge with fund_id
 
-    fund_info_df = load_parquet(PROCESSED_NPORT / f"NPORT_funds_allQuarters.parquet")
+    fund_info_df = load_parquet(fund_info_df_file)
     fund_info_df = fund_info_df[["accession_number", "quarterly", "fund_id"]]
 
     hold_bonds_df = hold_bonds_df.merge(fund_info_df, on = ["accession_number", "quarterly"], how = "left")
@@ -54,8 +83,22 @@ def _create_funds_that_hold_bonds_list():
     Fundtion that creates list of funds that hold bonds, in paralell
     '''
 
-    _start_q = process_quarters["start"]
-    _end_q = process_quarters["end"]
+    # check that function is not run in paralell
+
+    if paralell_utils.is_nested_parallel():
+        
+        _message = (
+            "_create_funds_that_hold_bonds_list() runs in parallel, and cannot itself be called in a paralellized job."
+            "Please check the code and try again."
+        )
+        
+        raise paralell_utils.errors.NestedParallelError(_message)
+    
+    
+    # and if it is not, then run...
+
+    print("\n")
+    print("Creating funds that hold bonds list...")
 
     quarters = (
             pd
@@ -70,26 +113,36 @@ def _create_funds_that_hold_bonds_list():
 
     df = pd.concat(df_list, axis = 0)
 
-    save_parquet(df, PROJECT_TEMP / f"NPORT_funds_that_hold_bonds_{_start_q}_{_end_q}.parquet")
-    print(f"Saved PROJECT_TEMP/NPORT_funds_that_hold_bonds_{_start_q}_{_end_q}.parquet")
+    time.sleep(2)
+
+    save_parquet(df, funds_that_hold_bonds_file)
+    print(f"-> Saved {funds_that_hold_bonds_file}")
 
 
-#%% ========== call list of funds that hold bonds ========== %%#
+#%% ========== callable work functions ========== %%#
 
-def funds_that_hold_bonds_list():
+def fetch_funds_that_hold_bonds_list():
 
-    _start_q = process_quarters["start"]
-    _end_q = process_quarters["end"]
+    '''
+    Requirements:
+    - PROJECT_TEMP/f"NPORT_funds_that_hold_bonds_{_start_q}_{_end_q}.parquet"
+    '''
+    
+    # run rest of code
 
     try :
         
-        bondfunds = load_parquet(PROJECT_TEMP / f"NPORT_funds_that_hold_bonds_{_start_q}_{_end_q}.parquet")
-    
-    except FileNotFoundError:
+        bondfunds = load_parquet(funds_that_hold_bonds_file)
 
-        print(f"File with NPORT funds that hold bonds ({_start_q} - {_end_q}) not found. Creating it now")
+    except FileNotFoundError :
+
+        _message = (
+            f"File with NPORT funds that hold bonds ({_start_q} - {_end_q}) not found.\n"
+            "Proceeding to build it..."
+        )
+        print(_message)
         _create_funds_that_hold_bonds_list()
-        bondfunds = load_parquet(PROJECT_TEMP / f"NPORT_funds_that_hold_bonds_{_start_q}_{_end_q}.parquet")
-
+        bondfunds = load_parquet(funds_that_hold_bonds_file)
+        
     return bondfunds
 # %%

@@ -8,7 +8,7 @@
 do_check_figs = False
 generate_regressions = False
 
-#%% ========== configs ========== %%#
+#%% ========== project-wide configs ========== %%#
 
 from heterogeneity_code.configs import CONFIGS
 from pysfo.basic import load_parquet, save_parquet
@@ -32,6 +32,13 @@ batch_job_verbose = CONFIGS["GENERAL"]["batch_job_verbose"]
 
 process_quarters = CONFIGS["NPORT"]["process_quarters"]
 
+#%% ========== script-specific configs ========== %%#
+
+_start_q = process_quarters["start"]
+_end_q = process_quarters["end"]
+regression_results_df_file = PROJECT_TEMP / f"regression_results_{_start_q}_{_end_q}.parquet"
+
+
 #%% ========== quarterly regression results ========== %%#
 
 def _quarterly_regression_results(yq):
@@ -40,9 +47,22 @@ def _quarterly_regression_results(yq):
     # yq = "2025q2"
     #####
 
+    # function params
+
+    holdings_yq_file = PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet"
+
+    # needed files check
+
+    if not holdings_yq_file.exists():
+        _message = (
+            f"File not found {holdings_yq_file}.\n"
+            "Please run clean_nport before running this function"
+        )
+        raise FileNotFoundError(_message)
+
     # collapse fund bond holdings at the EM/DM level
 
-    holdings_df = load_parquet(PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet")
+    holdings_df = load_parquet(holdings_yq_file)
     holdings_df = _keep_bond_funds(holdings_df)
     holdings_df = holdings_df[holdings_df["asset_cat"] == "DBT"]
 
@@ -83,7 +103,7 @@ def _quarterly_regression_results(yq):
 
     # merge with PC data
 
-    df_PC = fetch_PCs_with_fund_info(aggregation_level = 1)
+    df_PC = fetch_PCs_with_fund_info()
     df_PC = df_PC[df_PC["quarterly"] ==  yq][["fund_id", "quarterly", "pc_1", "pc_2", "pc_3", "pc_4", "pc_5"]]
     mask = df_PC[["fund_id", "quarterly"]].duplicated()
     df_PC = df_PC[~mask]
@@ -167,8 +187,8 @@ def _generate_regression_results():
 
     results.reset_index(inplace = True)
 
-    save_parquet(results, PROJECT_TEMP / f"regression_results_{_start_quarter}_{_end_quarter}.parquet")
-    print(f"Regression results saved to $PROJECT_TEMP/regression_results_{_start_quarter}_{_end_quarter}.parquet")
+    save_parquet(results, regression_results_df_file)
+    print(f"Regression results saved to {regression_results_df_file}")
 
 
 # %% ========== generate regressions ========== %% #
@@ -179,7 +199,7 @@ if generate_regressions:
 
 # %% ========== generate figures ========== %% #
 
-df = load_parquet(PROJECT_TEMP / f"regression_results_2019q4_2025q4.parquet")
+df = load_parquet(regression_results_df_file)
 
 
 for _pc in ["pc_1", "pc_2", "pc_3", "pc_4", "pc_5"]:

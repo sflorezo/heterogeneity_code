@@ -14,6 +14,6 @@ SEC_API_KEY="$SEC_API_KEY"
 DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY"
 
 [nport]
-process_quarters = { start = "2019q4", end = "2025q4" } # 2019q4, 2025q4
+process_quarters = { start = "2025q3", end = "2025q4" } # 2019q4, 2025q4
 [nport.build_PCs]
     aggregation_level = 1

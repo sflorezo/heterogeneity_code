@@ -3,10 +3,11 @@
 #%% ========== params ========== %%#
 # FIXME: Params
 
-#%% ========== uplload libraries ========== %%#
+#%% ========== project-wide configs ========== %%#
 
 from heterogeneity_code.configs import CONFIGS
 from pysfo.basic import load_parquet, save_parquet, statatab, sumstats, test_time
+from pysfo import paralell_utils
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -17,8 +18,6 @@ from joblib import Parallel, delayed
 
 # from pysfo.basic import *
 
-#%% ========== initialize work objects and configs ========== %%#
-
 PROCESSED_NPORT = Path(CONFIGS["PATHS"]["PROCESSED_NPORT"])
 PROJECT_TEMP = Path(CONFIGS["PATHS"]["PROJECT_TEMP"])
 
@@ -26,7 +25,13 @@ random_seed = CONFIGS["GENERAL"]["random_seed"]
 n_workers = CONFIGS["GENERAL"]["n_workers"]
 batch_job_verbose = CONFIGS["GENERAL"]["batch_job_verbose"]
 process_quarters = CONFIGS["NPORT"]["process_quarters"]
+aggregation_level = CONFIGS["NPORT"]["build_PCs"]["aggregation_level"]
 
+#%% ========== script-specific configs ========== %%#
+
+_start_q = process_quarters["start"]
+_end_q = process_quarters["end"]
+funds_PC_file = PROJECT_TEMP / f"PC_assetcat_funds_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet"
 
 #%% ========== helper functions ========== %%#
 
@@ -115,7 +120,7 @@ def _quarterly_build_PC(quarterly_assetcat_shares_df):
 
     return X_pc_
 
-def _fullpanel_build_PC(aggregation_level):
+def _fullpanel_build_PC():
 
     # packages
 
@@ -124,9 +129,21 @@ def _fullpanel_build_PC(aggregation_level):
     _start_q = process_quarters["start"]
     _end_q = process_quarters["end"]
 
+    #check that function is not run in paralell
+
+    if paralell_utils.is_nested_parallel():
+
+        _message = (
+            "_fullpanel_build_PC runs in parallel, and cannot itself be called in a paralellized job."
+            "Please check the code and try again."
+        )
+    
+        raise paralell_utils.errors.NestedParallelError(_message)
+
+
     # load data
     
-    df = portfolio_weights_df(type = "bond_funds", aggregation_level = aggregation_level)
+    df = portfolio_weights_df(keep_fund_type = "bond_funds")
 
     df_list = [
         df[df["quarterly"] == yq]
@@ -159,25 +176,23 @@ def _fullpanel_build_PC(aggregation_level):
     
     # save
     
-    save_parquet(df, PROJECT_TEMP / f"PC_assetcat_funds_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
-    print(f"Saved PROJECT_TEMP/PC_assetcat_funds_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
+    save_parquet(df, funds_PC_file)
+    print(f"-> Saved {funds_PC_file}")
 
 
 #%% ========== Call PCs dataset ========== %%#
 
-def fetch_PC_df(aggregation_level):
-
-    _start_q = process_quarters["start"]
-    _end_q = process_quarters["end"]
+def fetch_PC_df():
 
     try :
-
-        df = load_parquet(PROJECT_TEMP / f"PC_assetcat_funds_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
+        
+        df = load_parquet(funds_PC_file)
 
     except FileNotFoundError:
 
         print(f"PCs dataframe ({_start_q} - {_end_q}) not found. Creating it now")
-        _fullpanel_build_PC(aggregation_level = aggregation_level)
-        df = load_parquet(PROJECT_TEMP / f"PC_assetcat_funds_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
+        _fullpanel_build_PC()
+        df = load_parquet(funds_PC_file)
 
     return df
+# %%

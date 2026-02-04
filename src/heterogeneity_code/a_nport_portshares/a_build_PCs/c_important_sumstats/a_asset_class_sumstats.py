@@ -1,4 +1,6 @@
-#%%========== configs ==========%%#
+# pyright: reportIndexIssue=false
+
+#%% ========== project-wide configs ========== %%#
 
 from heterogeneity_code.a_nport_portshares.a_build_PCs.b_build_port_weights.b_build_port_weights import portfolio_weights_df
 from heterogeneity_code.configs import CONFIGS
@@ -9,7 +11,21 @@ OUT_PATH = CONFIGS["PATHS"]["OUT_PATH"]
 
 # from pysfo.basic import *
 
-df = portfolio_weights_df(type = "bond_funds", aggregation_level = 1)
+PROCESSED_NPORT = CONFIGS["PATHS"]["PROCESSED_NPORT"]
+PROJECT_TEMP = CONFIGS["PATHS"]["PROJECT_TEMP"]
+process_quarters = CONFIGS["NPORT"]["process_quarters"]
+joblib_n_workers = CONFIGS["GENERAL"]["n_workers"]
+joblib_verbose = CONFIGS["GENERAL"]["batch_job_verbose"]
+aggregation_level = CONFIGS["NPORT"]["build_PCs"]["aggregation_level"]
+
+
+
+#%% ========== running sumstats ========== %%#
+
+df = portfolio_weights_df(keep_fund_type = "bond_funds")
+
+#---- clean and do sumstats
+
 df = df[df["quarterly"] == df["quarterly"].max()]
 
 _sumstats = (
@@ -57,3 +73,5 @@ tex_str += "\\end{tabular}"
 
 export_txt(tex_str, path = OUT_PATH / "major_asset_classes.tex")
 
+
+# %%
