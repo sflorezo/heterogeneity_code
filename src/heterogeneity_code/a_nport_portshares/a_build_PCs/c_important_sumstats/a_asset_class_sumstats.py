@@ -7,7 +7,6 @@ import pandas as pd
 
 OUT_PATH = CONFIGS["PATHS"]["OUT_PATH"]
 
-
 # from pysfo.basic import *
 
 df = portfolio_weights_df(type = "bond_funds", aggregation_level = 1)

@@ -1,3 +1,5 @@
+# pyright: reportIndexIssue=false
+
 #%% ========== configs ========== %%#
 
 # FIXME: These parameters should not be used in a final clean version
@@ -21,6 +23,7 @@ PROJECT_TEMP = CONFIGS["PATHS"]["PROJECT_TEMP"]
 process_quarters = cast(Dict, CONFIGS["NPORT"]["process_quarters"])
 joblib_n_workers = CONFIGS["GENERAL"]["n_workers"]
 joblib_verbose = CONFIGS["GENERAL"]["batch_job_verbose"]
+aggregation_level = CONFIGS["NPORT"]["build_PCs"]["aggregation_level"]
 
 
 #%% ========== helper functions ========== %%
@@ -61,9 +64,6 @@ def _group_asset_cat_levels(df: pd.DataFrame, aggregation_level) -> pd.DataFrame
         df["asset_bucket"] = asset_bucket_lv_99(df)
 
     return df
-
-
-#%% ========== buid portfolio shares ========== %%
 
 def _build_quarterly_portfolio_shares(yq, aggregation_level):
     
@@ -118,14 +118,15 @@ def _build_quarterly_portfolio_shares(yq, aggregation_level):
 
     return holdings_df
 
-#%% ========== build_portf_weights ========== %%#
+def _build_portf_weights(aggregation_level):
 
-def build_portf_weights(aggregation_level):
+    _start_q = process_quarters["start"]
+    _end_q = process_quarters["end"]
 
     quarters = (
             pd
-            .period_range(process_quarters["start"].upper(), 
-                        process_quarters["end"].upper(), freq="Q")
+            .period_range(_start_q.upper(), 
+                          _end_q.upper(), freq="Q")
             .astype(str).str.lower().tolist()
         )
     
@@ -135,14 +136,24 @@ def build_portf_weights(aggregation_level):
 
     df = pd.concat(df_list, axis = 0)
     
-    save_parquet(df, PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_aggLvl{aggregation_level}.parquet")
-    print(f"Saved PROJECT_TEMP/NPORT_assetcat_portfolioshares_aggLvl{aggregation_level}.parquet")
+    save_parquet(df, PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
+    print(f"Saved PROJECT_TEMP/NPORT_assetcat_portfolioshares_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
 
 #%% ========== import portfolio weights dataset ========== %%#
 
 def portfolio_weights_df(type, aggregation_level):
 
-    df = load_parquet(PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_aggLvl{aggregation_level}.parquet")
+    _start_q = process_quarters["start"]
+    _end_q = process_quarters["end"]
+
+    try :
+        df = load_parquet(PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
+    
+    except FileNotFoundError:
+
+        print(f"portfolio_weights_df ({_start_q} - {_end_q}) not found. Creating it now")
+        _build_portf_weights(aggregation_level = aggregation_level)
+        df = load_parquet(PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
 
     # select type
     
@@ -150,6 +161,8 @@ def portfolio_weights_df(type, aggregation_level):
         df = _keep_bond_funds(df)
     elif type == "all" :
         pass
+    else :
+        raise ValueError("type must be either 'bond_funds' or 'all'")
 
     return df    
 

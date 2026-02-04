@@ -48,18 +48,19 @@ def _funds_that_hold_bonds_inquarter(yq : str) -> pd.DataFrame:
 
     return hold_bonds_df
 
-#%% ========== create funds that hold bonds ========== %%#
-
-def create_funds_that_hold_bonds_list():
+def _create_funds_that_hold_bonds_list():
 
     '''
     Fundtion that creates list of funds that hold bonds, in paralell
     '''
 
+    _start_q = process_quarters["start"]
+    _end_q = process_quarters["end"]
+
     quarters = (
             pd
-            .period_range(process_quarters["start"].upper(), 
-                        process_quarters["end"].upper(), freq="Q")
+            .period_range(_start_q.upper(), 
+                        _end_q.upper(), freq="Q")
             .astype(str).str.lower().tolist()
         )
 
@@ -69,14 +70,26 @@ def create_funds_that_hold_bonds_list():
 
     df = pd.concat(df_list, axis = 0)
 
-    save_parquet(df, PROJECT_TEMP / "NPORT_funds_that_hold_bonds.parquet")
-    print("Saved PROJECT_TEMP/NPORT_funds_that_hold_bonds.parquet")
+    save_parquet(df, PROJECT_TEMP / f"NPORT_funds_that_hold_bonds_{_start_q}_{_end_q}.parquet")
+    print(f"Saved PROJECT_TEMP/NPORT_funds_that_hold_bonds_{_start_q}_{_end_q}.parquet")
 
 
 #%% ========== call list of funds that hold bonds ========== %%#
 
 def funds_that_hold_bonds_list():
 
-    bondfunds = load_parquet(PROJECT_TEMP / f"NPORT_funds_that_hold_bonds.parquet")
+    _start_q = process_quarters["start"]
+    _end_q = process_quarters["end"]
+
+    try :
+        
+        bondfunds = load_parquet(PROJECT_TEMP / f"NPORT_funds_that_hold_bonds_{_start_q}_{_end_q}.parquet")
+    
+    except FileNotFoundError:
+
+        print(f"File with NPORT funds that hold bonds ({_start_q} - {_end_q}) not found. Creating it now")
+        _create_funds_that_hold_bonds_list()
+        bondfunds = load_parquet(PROJECT_TEMP / f"NPORT_funds_that_hold_bonds_{_start_q}_{_end_q}.parquet")
 
     return bondfunds
+# %%

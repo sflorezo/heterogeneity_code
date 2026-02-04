@@ -1,3 +1,5 @@
+# pyright: reportIndexIssue=false
+
 #%% ========== params ========== %%#
 # FIXME: Params
 
@@ -23,6 +25,8 @@ PROJECT_TEMP = Path(CONFIGS["PATHS"]["PROJECT_TEMP"])
 random_seed = CONFIGS["GENERAL"]["random_seed"]
 n_workers = CONFIGS["GENERAL"]["n_workers"]
 batch_job_verbose = CONFIGS["GENERAL"]["batch_job_verbose"]
+process_quarters = CONFIGS["NPORT"]["process_quarters"]
+
 
 #%% ========== helper functions ========== %%#
 
@@ -111,13 +115,14 @@ def _quarterly_build_PC(quarterly_assetcat_shares_df):
 
     return X_pc_
 
-#%% ========== fullpanel_build_Cij_PC ========== %%#
-
-def fullpanel_build_PC(aggregation_level):
+def _fullpanel_build_PC(aggregation_level):
 
     # packages
 
     from heterogeneity_code.a_nport_portshares.a_build_PCs.b_build_port_weights.b_build_port_weights import portfolio_weights_df
+    
+    _start_q = process_quarters["start"]
+    _end_q = process_quarters["end"]
 
     # load data
     
@@ -154,5 +159,25 @@ def fullpanel_build_PC(aggregation_level):
     
     # save
     
-    save_parquet(df, PROJECT_TEMP / f"PC_assetcat_funds_aggLvl{aggregation_level}.parquet")
-    print(f"Saved PROJECT_TEMP/PC_assetcat_funds_aggLvl{aggregation_level}.parquet")
+    save_parquet(df, PROJECT_TEMP / f"PC_assetcat_funds_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
+    print(f"Saved PROJECT_TEMP/PC_assetcat_funds_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
+
+
+#%% ========== Call PCs dataset ========== %%#
+
+def fetch_PC_df(aggregation_level):
+
+    _start_q = process_quarters["start"]
+    _end_q = process_quarters["end"]
+
+    try :
+
+        df = load_parquet(PROJECT_TEMP / f"PC_assetcat_funds_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
+
+    except FileNotFoundError:
+
+        print(f"PCs dataframe ({_start_q} - {_end_q}) not found. Creating it now")
+        _fullpanel_build_PC(aggregation_level = aggregation_level)
+        df = load_parquet(PROJECT_TEMP / f"PC_assetcat_funds_{_start_q}_{_end_q}_aggLvl{aggregation_level}.parquet")
+
+    return df

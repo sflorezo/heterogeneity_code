@@ -1,5 +1,6 @@
 # pyright: reportAttributeAccessIssue=false
 # pyright: reportArgumentType=false
+# pyright: reportIndexIssue=false
 
 #%% ========= imports ========== %%#
 
@@ -18,9 +19,11 @@ PROCESSED_NPORT = CONFIGS["PATHS"]["PROCESSED_NPORT"]
 PROJECT_TEMP = CONFIGS["PATHS"]["PROJECT_TEMP"]
 OUT_PATH = CONFIGS["PATHS"]["OUT_PATH"]
 
+aggregation_level = CONFIGS["NPORT"]["build_PCs"]["aggregation_level"]
+
 #%% ========= Upload data ========== %%#
 
-df = fetch_PCs_with_fund_info(aggregation_level = 1)
+df = fetch_PCs_with_fund_info(aggregation_level = aggregation_level)
 
 #%% ========= quarterly mean of PCs ========== %%#
 
@@ -55,7 +58,7 @@ For each quarter, find funds with
 For each of those funds, find their holdings and plot them in the time series.
 '''
 
-df = fetch_PCs_with_fund_info(aggregation_level = 1)
+df = fetch_PCs_with_fund_info(aggregation_level = aggregation_level)
 
 pc = "pc_1"
 

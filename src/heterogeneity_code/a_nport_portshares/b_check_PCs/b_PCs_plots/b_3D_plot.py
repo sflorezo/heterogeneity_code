@@ -1,5 +1,6 @@
 # pyright: reportAttributeAccessIssue=false
 # pyright: reportArgumentType=false
+# pyright: reportIndexIssue=false
 
 #%% ========= imports ========== %%#
 
@@ -21,10 +22,11 @@ PROCESSED_NPORT = CONFIGS["PATHS"]["PROCESSED_NPORT"]
 PROJECT_TEMP = CONFIGS["PATHS"]["PROJECT_TEMP"]
 OUT_PATH = CONFIGS["PATHS"]["OUT_PATH"]
 
+aggregation_level = CONFIGS["NPORT"]["build_PCs"]["aggregation_level"]
 
 #%% ========== See funds in 2-dimensional space of components ========== %%#
 
-df = fetch_PCs_with_fund_info(aggregation_level = 1)
+df = fetch_PCs_with_fund_info(aggregation_level = aggregation_level)
 
 _plot = {}
 

@@ -14,7 +14,9 @@ PROJECT_TEMP = CONFIGS["PATHS"]["PROJECT_TEMP"]
 
 def fetch_PCs_with_fund_info(aggregation_level):
 
-    PC_panel = load_parquet(PROJECT_TEMP / f"PC_assetcat_funds_aggLvl{aggregation_level}.parquet")
+    from heterogeneity_code.a_nport_portshares.a_build_PCs.d_build_PCs.a_simple_one_dimensional import fetch_PC_df
+
+    PC_panel = fetch_PC_df(aggregation_level)
     fund_level_data = load_parquet(PROCESSED_NPORT / f"NPORT_funds_allQuarters.parquet")
 
     fund_level_data = fund_level_data[["fund_id", "quarterly", "fund_total_assets"]]
@@ -22,3 +24,4 @@ def fetch_PCs_with_fund_info(aggregation_level):
     PC_panel = pd.merge(fund_level_data, PC_panel, on = ["fund_id", "quarterly"], how = "right")
 
     return PC_panel
+# %%
