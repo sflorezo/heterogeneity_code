@@ -25,7 +25,7 @@ For each economy type, the figure shows the fund size-weighted ratio of the port
 <br>
 
 **2 Evolution of the Portfolio Allocation to Each Economy Across Time (equally weighted)** <br>
-<img src="_imagesdump/2026-02-05-17-23-55.png" width="650" /> <br>
+<img src="_imagesdump/2026-02-05-17-37-03.png" width="650" /> <br>
 For each economy type, the figure shows the equally sized ratio of the portfolio share assigned to that economy type (holdings in economy type / total holdings) in a period, as proportion to the time average portfolio share for the economy type (for comparison across economies).
 
 <br>
