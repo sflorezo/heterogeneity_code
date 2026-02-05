@@ -21,6 +21,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 import pandas as pd
+from itertools import product
+import warnings
 
 # from pysfo.basic import *
 
@@ -65,38 +67,50 @@ def _build_fund_panel_collapsed_by_EM_DM_holdings():
     def _quarterly_collase(yq):
 
         ###
-        # yq = "2025q3"
+        # Check period for infinite problem
+        # yq = "2022q3"
         ###
 
         # function params
 
         df = _collapse_debt_holdings_EM_DM_USA(yq)
-        
-        # stats
 
-        # df[_currencyval_cols + "_mill"] = df[_currencyval_cols] / 1e6
-        # df[_currencyval_cols + "_assetshare"] = df[_currencyval_cols].div(df["fund_total_assets"], axis=0)
+        # prep data
 
-        # collapse
+        drop = (df["fund_total_assets"] == 0)
+        df = df[~drop]
+
+        # define collapse operations
 
         issuers = ["EM", "DM", "USA"]
+        quantiles = [0.1, 0.25, 0.5, 0.75, 0.9]
 
         operations = {
-            f"{iss}_mill" : {"fn" : lambda x : np.mean(x) / 1e6, 
+            f"{iss}_mill" : {"fn" : lambda x : np.nanmean(x) / 1e6, 
                                        "df_argnames" : f"currency_value_{iss}"}
             for iss in issuers
         } | {
-            f"{iss}_assetshare" : {"fn" : lambda x, y : np.mean(x / y), 
+            f"{iss}_assetshare" : {"fn" : lambda x, y : np.nanmean(x / y), 
                                    "df_argnames" : [f"currency_value_{iss}", "fund_total_assets"]}
             for iss in issuers
+        } | {
+            f"{iss}_mill_q{q:.2f}" : {"fn" : lambda x, : np.quantile(x, q) / 1e6, 
+                                   "df_argnames" : f"currency_value_{iss}"}
+            for iss, q in product(issuers, quantiles)
         }
 
-        collapsed = (
-            df
-            .groupby("quarterly")
-            .apply(lambda g: groupby_apply_various(g, operations))
-            .reset_index()
-        )
+        # collapse
+
+        with warnings.catch_warnings():
+
+            warnings.simplefilter("ignore")
+
+            collapsed = (
+                df
+                .groupby("quarterly")
+                .apply(lambda g: groupby_apply_various(g, operations))
+                .reset_index()
+            )
         
         return collapsed
     
@@ -109,7 +123,7 @@ def _build_fund_panel_collapsed_by_EM_DM_holdings():
             .astype(str).str.lower().tolist()
         )
 
-    print("[_build_fund_panel_collapsed_by_EM_DM_holdings] Building collapsed fund panel (version Feb 5 3:16 pm)...")
+    print("[_build_fund_panel_collapsed_by_EM_DM_holdings] Building collapsed fund panel (version Feb 5 3:57 pm)...")
 
     result_list = Parallel(
         n_jobs = n_workers,
@@ -147,6 +161,13 @@ df = fetch_fund_collapsed_by_EM_DM_holdings()
 
 plt.plot(df["quarterly"].dt.to_timestamp(), df["EM_mill"].diff() / df["EM_mill"].shift(1), label = "EM")
 plt.plot(df["quarterly"].dt.to_timestamp(), df["DM_mill"].diff() / df["DM_mill"].shift(1), label = "DM (ex-USA)")
+plt.plot(df["quarterly"].dt.to_timestamp(), df["USA_mill"].diff() / df["USA_mill"].shift(1), label = "USA")
+plt.legend()
+
+
+plt.plot(df["quarterly"].dt.to_timestamp(), df["EM_assetshare"].diff() / df["EM_assetshare"].shift(1), label = "EM")
+plt.plot(df["quarterly"].dt.to_timestamp(), df["DM_assetshare"].diff() / df["DM_assetshare"].shift(1), label = "DM (ex-USA)")
+plt.plot(df["quarterly"].dt.to_timestamp(), df["USA_assetshare"].diff() / df["USA_assetshare"].shift(1), label = "USA")
 plt.legend()
 
 
