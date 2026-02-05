@@ -109,7 +109,7 @@ def _build_fund_panel_collapsed_by_EM_DM_holdings():
             .astype(str).str.lower().tolist()
         )
 
-    print("[_build_fund_panel_collapsed_by_EM_DM_holdings] Building collapsed fund panel...")
+    print("[_build_fund_panel_collapsed_by_EM_DM_holdings] Building collapsed fund panel (version Feb 5 3:16 pm)...")
 
     result_list = Parallel(
         n_jobs = n_workers,
