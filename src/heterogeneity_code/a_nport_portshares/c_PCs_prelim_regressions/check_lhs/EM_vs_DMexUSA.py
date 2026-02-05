@@ -98,7 +98,7 @@ def _build_fund_panel_collapsed_by_EM_DM_holdings():
                                    "df_argnames" : f"currency_value_{iss}"}
             for iss, q in product(issuers, quantiles)
         }
-
+        
         # collapse
 
         with warnings.catch_warnings():
