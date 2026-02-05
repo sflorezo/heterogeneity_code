@@ -98,7 +98,7 @@ def _build_fund_panel_collapsed_by_EM_DM_holdings():
                                    "df_argnames" : f"currency_value_{iss}"}
             for iss, q in product(issuers, quantiles)
         }
-        
+
         # collapse
 
         with warnings.catch_warnings():
@@ -123,7 +123,7 @@ def _build_fund_panel_collapsed_by_EM_DM_holdings():
             .astype(str).str.lower().tolist()
         )
 
-    print("[_build_fund_panel_collapsed_by_EM_DM_holdings] Building collapsed fund panel (version Feb 5 3:57 pm)...")
+    print("[_build_fund_panel_collapsed_by_EM_DM_holdings] Building collapsed fund panel (version Feb 5 4:26 pm)...")
 
     result_list = Parallel(
         n_jobs = n_workers,
