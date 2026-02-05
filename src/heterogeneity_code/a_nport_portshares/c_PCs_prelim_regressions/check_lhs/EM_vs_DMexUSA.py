@@ -90,7 +90,7 @@ def _build_fund_panel_collapsed_by_EM_DM_holdings():
                                        "df_argnames" : f"currency_value_{iss}"}
             for iss in issuers
         } | {
-            f"{iss}_assetshare" : {"fn" : lambda x, y : np.nanmean(x / y), 
+            f"{iss}_assetshare" : {"fn" : lambda x, y : np.nanmean(x) / np.nanmean(y), 
                                    "df_argnames" : [f"currency_value_{iss}", "fund_total_assets"]}
             for iss in issuers
         } | {
