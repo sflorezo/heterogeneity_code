@@ -1,6 +1,7 @@
 # pyright: reportArgumentType=false
 # pyright: reportIndexIssue=false
 # pyright: reportOptionalMemberAccess=false
+# pyright: reportAttributeAccessIssue=false
 
 #%% ========== params ========== %%#
 # FIXME: temporal params
@@ -44,7 +45,8 @@ fund_collapsed_hdgs_file = PROJECT_TEMP / f"fund_collapsed_hdgs_file_{_start_qua
 def _build_fund_panel_collapsed_by_EM_DM_holdings():
 
     from pysfo import paralell_utils
-    from heterogeneity_code.a_nport_portshares.c_PCs_prelim_regressions.b_make_regressions import _collapse_debt_holdings_EM_DM
+    from heterogeneity_code.a_nport_portshares.c_PCs_prelim_regressions.b_make_regressions import _collapse_debt_holdings_EM_DM_USA
+    from pysfo.basic import groupby_apply_various
 
     #check that function is not run in paralell
 
@@ -62,23 +64,40 @@ def _build_fund_panel_collapsed_by_EM_DM_holdings():
     
     def _quarterly_collase(yq):
 
+        ###
+        # yq = "2025q3"
+        ###
+
         # function params
 
-        df = _collapse_debt_holdings_EM_DM(yq)
-        _currencyval_cols = df.filter(regex = "currency_value_").columns
-        df[_currencyval_cols + "_mill"] = df[_currencyval_cols] / 1e6
+        df = _collapse_debt_holdings_EM_DM_USA(yq)
+        
+        # stats
 
+        # df[_currencyval_cols + "_mill"] = df[_currencyval_cols] / 1e6
+        # df[_currencyval_cols + "_assetshare"] = df[_currencyval_cols].div(df["fund_total_assets"], axis=0)
+
+        # collapse
+
+        issuers = ["EM", "DM", "USA"]
+
+        operations = {
+            f"{iss}_mill" : {"fn" : lambda x : np.mean(x) / 1e6, 
+                                       "df_argnames" : f"currency_value_{iss}"}
+            for iss in issuers
+        } | {
+            f"{iss}_assetshare" : {"fn" : lambda x, y : np.mean(x / y), 
+                                   "df_argnames" : [f"currency_value_{iss}", "fund_total_assets"]}
+            for iss in issuers
+        }
 
         collapsed = (
             df
             .groupby("quarterly")
-            .agg(
-                EM_mill = ("currency_value_EM_mill", "mean"),
-                DM_mill = ("currency_value_DM_mill", "mean"),
-            )
+            .apply(lambda g: groupby_apply_various(g, operations))
             .reset_index()
         )
-
+        
         return collapsed
     
     # build collapsed fund panel
@@ -105,14 +124,30 @@ def _build_fund_panel_collapsed_by_EM_DM_holdings():
     save_parquet(df, fund_collapsed_hdgs_file)
     print(f"-> Saved {fund_collapsed_hdgs_file}")
 
+def fetch_fund_collapsed_by_EM_DM_holdings():
 
+    try :
 
+        df = load_parquet(fund_collapsed_hdgs_file)
 
-#%% ========== go ========== %%#
+    except FileNotFoundError:   
 
+        _msg = (
+            "[fetch_fund_collapsed_by_EM_DM_holdings] fund_collapsed_hdgs_file not found. Please check.\n",
+            "(Note: This should eventually be replaced with a function that builds the file.)"
+        )
 
+        raise FileNotFoundError(_msg)
+    
+    return df
 
-# plt.plot(_sumstats["EM_mill"], _sumstats["quarterly"].to_timestamp())
+#%% ========== check file ========== %%#
+
+df = fetch_fund_collapsed_by_EM_DM_holdings()
+
+plt.plot(df["quarterly"].dt.to_timestamp(), df["EM_mill"].diff() / df["EM_mill"].shift(1), label = "EM")
+plt.plot(df["quarterly"].dt.to_timestamp(), df["DM_mill"].diff() / df["DM_mill"].shift(1), label = "DM (ex-USA)")
+plt.legend()
 
 
 #%% ========== not importable module safeguard ========== %%#

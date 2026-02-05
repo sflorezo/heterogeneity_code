@@ -31,7 +31,7 @@ def _funds_that_hold_bonds_inquarter(yq : str) -> pd.DataFrame:
     ####
     # yq = "2024q4"
     ####
-
+    
     # function params
 
     holdings_yq_file = PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet"

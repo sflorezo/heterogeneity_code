@@ -13,7 +13,6 @@ generate_regressions = False
 from heterogeneity_code.configs import CONFIGS
 from pysfo.basic import load_parquet, save_parquet
 from pysfo import paralell_utils
-from heterogeneity_code.a_nport_portshares.a_build_PCs.b_build_port_weights.b_build_port_weights import _keep_bond_funds
 from heterogeneity_code.a_nport_portshares.b_check_PCs.a_preliminary.a_merge_PCs_and_funds import fetch_PCs_with_fund_info
 import statsmodels.api as sm
 import numpy as np
@@ -42,7 +41,7 @@ regression_results_df_file = PROJECT_TEMP / f"regression_results_{_start_q}_{_en
 
 #%% ========== quarterly regression results ========== %%#
 
-def _collapse_debt_holdings_EM_DM(yq):
+def _collapse_debt_holdings_EM_DM_USA(yq):
 
     #####
     # yq = "2025q2"
@@ -64,23 +63,34 @@ def _collapse_debt_holdings_EM_DM(yq):
     # collapse fund bond holdings at the EM/DM level
 
     holdings_df = load_parquet(holdings_yq_file)
-    holdings_df = _keep_bond_funds(holdings_df)
     holdings_df = holdings_df[holdings_df["asset_cat"] == "DBT"]
 
+    eme_issuer = holdings_df["investment_country_EME"] == 1
+    dm_ex_usa_issuer = (holdings_df["investment_country_DM"] == 1) & (holdings_df["investment_country_iso3"] != "USA")
+    usa_issuer = holdings_df["investment_country_iso3"] == "USA"
+
+    holdings_df["issuer_cty_group"] = np.nan
+
+    for selector, label in zip(
+        [eme_issuer, dm_ex_usa_issuer, usa_issuer],
+        ["eme", "dm_ex_usa", "usa"]
+        
+    ):
+        holdings_df["issuer_cty_group"] = np.where(selector, label, holdings_df["issuer_cty_group"])
+
     keep = (
-        (
-            holdings_df["investment_country_EME"] == 1
-        )
-        | (
-            (holdings_df["investment_country_DM"] == 1) & (holdings_df["investment_country_iso3"] != "USA")
-        )
+        eme_issuer
+        | dm_ex_usa_issuer
+        | usa_issuer
     )
 
     holdings_df = holdings_df[keep]
 
+    # collapse
+
     holdings_df = (
         holdings_df
-        .groupby(["fund_id", "quarterly", "investment_country_EME"])
+        .groupby(["fund_id", "quarterly", "issuer_cty_group"])
         .agg({
             "currency_value" : "sum",
             "fund_total_assets" : "first"
@@ -88,13 +98,19 @@ def _collapse_debt_holdings_EM_DM(yq):
         .reset_index()
         .pivot_table(
             index = ["fund_id", "quarterly", "fund_total_assets"],
-            columns = "investment_country_EME",
+            columns = "issuer_cty_group",
             values = "currency_value",
         )
         .reset_index()
     )
 
-    holdings_df.rename(columns = {0 : "currency_value_DM", 1 : "currency_value_EM"}, inplace = True)
+    holdings_df.rename(
+        columns = {
+            "dm_ex_usa": "currency_value_DM", 
+            "eme" : "currency_value_EM",
+            "usa" : "currency_value_USA",
+        }, inplace = True
+    )
     holdings_df.iloc[:,3:] = holdings_df.iloc[:,3:].apply(lambda x : x.fillna(0))
     holdings_df.columns.name = None
 
@@ -102,13 +118,15 @@ def _collapse_debt_holdings_EM_DM(yq):
 
 def _quarterly_regression_results(yq):
 
-    # #####
-    # # yq = "2025q2"
-    # #####
+    #####
+    # yq = "2025q2"
+    #####
 
-    holdings_df = _collapse_debt_holdings_EM_DM(yq)
+    holdings_df = _collapse_debt_holdings_EM_DM_USA(yq)
 
     holdings_df.columns = holdings_df.columns.str.replace("currency_value_", "")
+    holdings_df.drop(columns = "USA", inplace = True)
+
     holdings_df["s_EM"] = holdings_df["EM"] / holdings_df["fund_total_assets"]
     holdings_df["s_DM"] = holdings_df["DM"] / holdings_df["fund_total_assets"]
     holdings_df = holdings_df.drop(columns = ["DM", "EM"])
@@ -120,7 +138,7 @@ def _quarterly_regression_results(yq):
     mask = df_PC[["fund_id", "quarterly"]].duplicated()
     df_PC = df_PC[~mask]
 
-    df_ = holdings_df.merge(df_PC, on = ["fund_id", "quarterly"], how = "left", validate = "m:1")
+    df_ = holdings_df.merge(df_PC, on = ["fund_id", "quarterly"], how = "right", validate = "m:1")
     df_["w_"] = (df_["fund_total_assets"] / df_["fund_total_assets"].max()) * 50
 
     # keep only emerging markets and developed markets outside the US
