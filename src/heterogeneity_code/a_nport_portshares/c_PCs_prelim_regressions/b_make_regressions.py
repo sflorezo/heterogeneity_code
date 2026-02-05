@@ -42,7 +42,7 @@ regression_results_df_file = PROJECT_TEMP / f"regression_results_{_start_q}_{_en
 
 #%% ========== quarterly regression results ========== %%#
 
-def _quarterly_regression_results(yq):
+def _collapse_debt_holdings_EM_DM(yq):
 
     #####
     # yq = "2025q2"
@@ -89,15 +89,26 @@ def _quarterly_regression_results(yq):
         .pivot_table(
             index = ["fund_id", "quarterly", "fund_total_assets"],
             columns = "investment_country_EME",
-            values = "currency_value"
+            values = "currency_value",
         )
         .reset_index()
     )
 
+    holdings_df.rename(columns = {0 : "currency_value_DM", 1 : "currency_value_EM"}, inplace = True)
     holdings_df.iloc[:,3:] = holdings_df.iloc[:,3:].apply(lambda x : x.fillna(0))
-    holdings_df.rename(columns = {0 : "DM", 1 : "EM"}, inplace = True)
     holdings_df.columns.name = None
 
+    return holdings_df
+
+def _quarterly_regression_results(yq):
+
+    # #####
+    # # yq = "2025q2"
+    # #####
+
+    holdings_df = _collapse_debt_holdings_EM_DM(yq)
+
+    holdings_df.columns = holdings_df.columns.str.replace("currency_value_", "")
     holdings_df["s_EM"] = holdings_df["EM"] / holdings_df["fund_total_assets"]
     holdings_df["s_DM"] = holdings_df["DM"] / holdings_df["fund_total_assets"]
     holdings_df = holdings_df.drop(columns = ["DM", "EM"])
@@ -237,74 +248,74 @@ def fetch_regression_results_df():
 
     return df
 
-
 # %% ========== generate figures ========== %% #
 
-df = fetch_regression_results_df()
+if generate_regressions:
+
+    df = fetch_regression_results_df()
+
+    for _pc in ["pc_1", "pc_2", "pc_3", "pc_4", "pc_5"]:
+
+        _pc_label = _pc.upper().replace("_", " ")
+
+        pc = df.loc[df["parameter"].eq(_pc),
+                    ["quarter", "params_DM", "params_EM", "bse_DM", "bse_EM"]].copy()
 
 
-for _pc in ["pc_1", "pc_2", "pc_3", "pc_4", "pc_5"]:
+        # Ensure correct quarter ordering (expects strings like "2019q4")
+        q = pc["quarter"].astype(str).str.lower().str.replace("q", "Q")
+        pc["_period"] = pd.PeriodIndex(q, freq="Q")
+        pc = pc.sort_values("_period")
+        periods = pc["_period"]
 
-    _pc_label = _pc.upper().replace("_", " ")
+        x = np.arange(len(pc))
+        dx = 0.14  # horizontal offset: EM left, DM right
 
-    pc = df.loc[df["parameter"].eq(_pc),
-                ["quarter", "params_DM", "params_EM", "bse_DM", "bse_EM"]].copy()
+        y_em = pc["params_EM"].to_numpy()
+        y_dm = pc["params_DM"].to_numpy()
+        err_em = (1.9 * pc["bse_EM"]).to_numpy()
+        err_dm = (1.9 * pc["bse_DM"]).to_numpy()
 
+        fig, ax = plt.subplots(figsize=(11, 4.8))
 
-    # Ensure correct quarter ordering (expects strings like "2019q4")
-    q = pc["quarter"].astype(str).str.lower().str.replace("q", "Q")
-    pc["_period"] = pd.PeriodIndex(q, freq="Q")
-    pc = pc.sort_values("_period")
-    periods = pc["_period"]
+        ax.errorbar(x - dx, y_em, yerr=err_em, fmt="o", capsize=3, label="EM")
+        ax.errorbar(x + dx, y_dm, yerr=err_dm, fmt="o", capsize=3, label="DM")
 
-    x = np.arange(len(pc))
-    dx = 0.14  # horizontal offset: EM left, DM right
+        ax.axhline(0, linewidth=1, color = "gray", alpha = 0.3)
 
-    y_em = pc["params_EM"].to_numpy()
-    y_dm = pc["params_DM"].to_numpy()
-    err_em = (1.9 * pc["bse_EM"]).to_numpy()
-    err_dm = (1.9 * pc["bse_DM"]).to_numpy()
+        ax.set_xticks(x)
+        ax.set_xticklabels(
+            pc["_period"].astype(str).str.replace("Q", "q"),
+            rotation=45, ha="right"
+        )
+        ax.tick_params(axis="both", labelsize=12)
 
-    fig, ax = plt.subplots(figsize=(11, 4.8))
+        ax.set_xlabel("")
+        ax.set_ylabel(f"Coef. on {_pc_label}", fontsize = 15)
+        ax.set_title(f"{_pc_label} coefficients by quarter (± 1.96 × SE)", fontsize = 15)
+        ax.legend()
 
-    ax.errorbar(x - dx, y_em, yerr=err_em, fmt="o", capsize=3, label="EM")
-    ax.errorbar(x + dx, y_dm, yerr=err_dm, fmt="o", capsize=3, label="DM")
+        ax.set_axisbelow(True)
+        ax.grid(
+            True,
+            which="both",
+            axis="both",
+            linestyle="--",
+            linewidth=0.6,
+            alpha=0.35,
+        )
 
-    ax.axhline(0, linewidth=1, color = "gray", alpha = 0.3)
+        ax.set_xticks(x)
+        ax.set_xticklabels([
+            str(p).replace("Q", "q") if p.quarter == 1 else ""
+            for p in periods
+        ])
 
-    ax.set_xticks(x)
-    ax.set_xticklabels(
-        pc["_period"].astype(str).str.replace("Q", "q"),
-        rotation=45, ha="right"
-    )
-    ax.tick_params(axis="both", labelsize=12)
-
-    ax.set_xlabel("")
-    ax.set_ylabel(f"Coef. on {_pc_label}", fontsize = 15)
-    ax.set_title(f"{_pc_label} coefficients by quarter (± 1.96 × SE)", fontsize = 15)
-    ax.legend()
-
-    ax.set_axisbelow(True)
-    ax.grid(
-        True,
-        which="both",
-        axis="both",
-        linestyle="--",
-        linewidth=0.6,
-        alpha=0.35,
-    )
-
-    ax.set_xticks(x)
-    ax.set_xticklabels([
-        str(p).replace("Q", "q") if p.quarter == 1 else ""
-        for p in periods
-    ])
-
-    fig.tight_layout()
-    plt.savefig(OUT_PATH / f"EM_DM_regs_{_pc}.pdf")
-    print(f"Saved OUT_PATH/EM_DM_regs_{_pc}.pdf")
-    plt.close(fig)
-    # plt.show()
+        fig.tight_layout()
+        plt.savefig(OUT_PATH / f"EM_DM_regs_{_pc}.pdf")
+        print(f"Saved OUT_PATH/EM_DM_regs_{_pc}.pdf")
+        plt.close(fig)
+        # plt.show()
 
 
 
