@@ -41,7 +41,7 @@ def _drop_smallest_funds_in_quarter(quarterly_assetcat_shares_df):
 
     if df["quarterly"].nunique() != 1:
 
-        raise ValueError("quarterly_assetcat_shares_df must contain only data for one quarter.")
+        raise ValueError("[_drop_smallest_funds_in_quarter] quarterly_assetcat_shares_df must contain only data for one quarter.")
     
     # drop smallest funds 
 
@@ -69,7 +69,7 @@ def _quarterly_build_PC(quarterly_assetcat_shares_df):
 
     if df["quarterly"].nunique() != 1:
 
-        raise ValueError("quarterly_assetcat_shares_df must contain only data for one quarter.")
+        raise ValueError("[_quarterly_build_PC] quarterly_assetcat_shares_df must contain only data for one quarter.")
 
     df = df.rename(columns={"w": "s"})
 
@@ -120,22 +120,23 @@ def _quarterly_build_PC(quarterly_assetcat_shares_df):
 
     return X_pc_
 
-def _fullpanel_build_PC():
+
+#%% ========== Call PCs dataset ========== %%#
+
+def build_assetcat_PC_fullpanel():
 
     # packages
 
     from heterogeneity_code.a_nport_portshares.a_build_PCs.b_build_port_weights.b_build_port_weights import portfolio_weights_df
-    
-    _start_q = process_quarters["start"]
-    _end_q = process_quarters["end"]
 
     #check that function is not run in paralell
 
     if paralell_utils.is_nested_parallel():
 
         _message = (
-            "_fullpanel_build_PC runs in parallel, and cannot itself be called in a paralellized job."
+            "[build_assetcat_PC_fullpanel] build_assetcat_PC_fullpanel runs in parallel, and cannot itself be called in a paralellized job."
             "Please check the code and try again."
+            "(Suggestion: Run build_assetcat_PC_fullpanel() before calling the paralellized job.)"
         )
     
         raise paralell_utils.errors.NestedParallelError(_message)
@@ -152,6 +153,8 @@ def _fullpanel_build_PC():
 
     # drop smallest funds 
 
+    print("[build_assetcat_PC_fullpanel] Dropping smallest funds...")
+
     df_list = Parallel(
         n_jobs = n_workers,
         verbose = batch_job_verbose
@@ -161,6 +164,8 @@ def _fullpanel_build_PC():
     )
 
     # build bilateral contrasts
+
+    print("[build_assetcat_PC_fullpanel] Building assetcat PCs...")
 
     df_list = Parallel(
         n_jobs = n_workers,
@@ -179,9 +184,6 @@ def _fullpanel_build_PC():
     save_parquet(df, funds_PC_file)
     print(f"-> Saved {funds_PC_file}")
 
-
-#%% ========== Call PCs dataset ========== %%#
-
 def fetch_PC_df():
 
     try :
@@ -190,8 +192,8 @@ def fetch_PC_df():
 
     except FileNotFoundError:
 
-        print(f"PCs dataframe ({_start_q} - {_end_q}) not found. Creating it now")
-        _fullpanel_build_PC()
+        print(f"[fetch_PC_df] PCs dataframe ({_start_q} - {_end_q}) not found. Creating it now")
+        build_assetcat_PC_fullpanel()
         df = load_parquet(funds_PC_file)
 
     return df

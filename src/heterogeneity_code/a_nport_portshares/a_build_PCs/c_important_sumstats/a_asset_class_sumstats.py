@@ -19,7 +19,6 @@ joblib_verbose = CONFIGS["GENERAL"]["batch_job_verbose"]
 aggregation_level = CONFIGS["NPORT"]["build_PCs"]["aggregation_level"]
 
 
-
 #%% ========== running sumstats ========== %%#
 
 df = portfolio_weights_df(keep_fund_type = "bond_funds")

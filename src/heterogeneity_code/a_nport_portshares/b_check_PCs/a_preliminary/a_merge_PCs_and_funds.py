@@ -24,7 +24,7 @@ def fetch_PCs_with_fund_info():
 
     if not fund_info_df_file.exists():
         _message = (
-            f"File not found {fund_info_df_file}.\n"
+            f"[fetch_PCs_with_fund_info] File not found {fund_info_df_file}.\n"
             "Please run clean_nport before running this function"
         )
         raise FileNotFoundError(_message)

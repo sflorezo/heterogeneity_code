@@ -12,6 +12,7 @@ generate_regressions = False
 
 from heterogeneity_code.configs import CONFIGS
 from pysfo.basic import load_parquet, save_parquet
+from pysfo import paralell_utils
 from heterogeneity_code.a_nport_portshares.a_build_PCs.b_build_port_weights.b_build_port_weights import _keep_bond_funds
 from heterogeneity_code.a_nport_portshares.b_check_PCs.a_preliminary.a_merge_PCs_and_funds import fetch_PCs_with_fund_info
 import statsmodels.api as sm
@@ -140,7 +141,24 @@ def _quarterly_regression_results(yq):
 
     return results
 
-def _generate_regression_results():
+
+# %% ========== callable functions ========== %% #
+
+def build_regression_results_df():
+
+    #check that function is not run in paralell
+
+    if paralell_utils.is_nested_parallel():
+
+        _message = (
+            "[build_regression_results_df] build_regression_results_df runs in parallel, and cannot itself be called in a paralellized job."
+            "Please check the code and try again."
+            "(Suggestion: Run build_regression_results_df() before calling the paralellized job.)"
+        )
+    
+        raise paralell_utils.errors.NestedParallelError(_message)
+    
+    # rest of function
 
     results = {}
 
@@ -153,6 +171,8 @@ def _generate_regression_results():
                           _end_quarter.upper(), freq="Q")
             .astype(str).str.lower().tolist()
         )
+
+    print("[build_regression_results_df] Building regression results by quarter...")
 
     result_list = Parallel(
         n_jobs = n_workers,
@@ -190,16 +210,37 @@ def _generate_regression_results():
     save_parquet(results, regression_results_df_file)
     print(f"Regression results saved to {regression_results_df_file}")
 
+def fetch_regression_results_df():
 
-# %% ========== generate regressions ========== %% #
+    from heterogeneity_code.a_nport_portshares.a_build_PCs.a_select_sample.funds_that_hold_bonds import create_funds_that_hold_bonds_list
+    from heterogeneity_code.a_nport_portshares.a_build_PCs.d_build_PCs.a_simple_one_dimensional import build_assetcat_PC_fullpanel
 
-if generate_regressions:
-    _generate_regression_results()
+    try :
+
+        df = load_parquet(regression_results_df_file)
+
+    except FileNotFoundError:
+
+        print(f"[fetch_regression_results_df] regression_results_df not found. Creating it now")
+
+        try :
+
+            build_regression_results_df()
+
+        except paralell_utils.errors.NestedParallelError:
+
+            create_funds_that_hold_bonds_list()
+            build_assetcat_PC_fullpanel()
+            build_regression_results_df()
+
+        df = load_parquet(regression_results_df_file)
+
+    return df
 
 
 # %% ========== generate figures ========== %% #
 
-df = load_parquet(regression_results_df_file)
+df = fetch_regression_results_df()
 
 
 for _pc in ["pc_1", "pc_2", "pc_3", "pc_4", "pc_5"]:

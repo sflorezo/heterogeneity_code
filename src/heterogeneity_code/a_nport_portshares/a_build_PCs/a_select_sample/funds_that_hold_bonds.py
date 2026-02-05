@@ -24,11 +24,6 @@ _start_q = process_quarters["start"]
 _end_q = process_quarters["end"]
 funds_that_hold_bonds_file = PROJECT_TEMP / f"NPORT_funds_that_hold_bonds_{_start_q}_{_end_q}.parquet"
 
-#%% ========== Exceptions and Errors ========== %%#
-
-class FundsThatHoldBondsNotFoundError(RuntimeError):
-        pass
-
 #%% ========== Helper Functions ========== %%#
 
 def _funds_that_hold_bonds_inquarter(yq : str) -> pd.DataFrame:
@@ -47,7 +42,7 @@ def _funds_that_hold_bonds_inquarter(yq : str) -> pd.DataFrame:
     for file in [holdings_yq_file, fund_info_df_file]:
         if not file.exists():
             _message = (
-                f"File not found {file}.\n"
+                f"[_funds_that_hold_bonds_inquarter] File not found {file}.\n"
                 "Please run clean_nport before running this function"
             )
             raise FileNotFoundError(_message)
@@ -77,10 +72,13 @@ def _funds_that_hold_bonds_inquarter(yq : str) -> pd.DataFrame:
 
     return hold_bonds_df
 
-def _create_funds_that_hold_bonds_list():
+
+#%% ========== callable work functions ========== %%#
+
+def create_funds_that_hold_bonds_list():
 
     '''
-    Fundtion that creates list of funds that hold bonds, in paralell
+    Function that creates list of funds that hold bonds, in paralell
     '''
 
     # check that function is not run in paralell
@@ -88,8 +86,9 @@ def _create_funds_that_hold_bonds_list():
     if paralell_utils.is_nested_parallel():
         
         _message = (
-            "_create_funds_that_hold_bonds_list() runs in parallel, and cannot itself be called in a paralellized job."
-            "Please check the code and try again."
+            "[create_funds_that_hold_bonds_list] create_funds_that_hold_bonds_list() runs in parallel, and cannot itself be called in a paralellized job.\n",
+            "Please check the code and try again.\n",
+            "(Suggestion: Run create_funds_that_hold_bonds_list() before calling the paralellized job.)"
         )
         
         raise paralell_utils.errors.NestedParallelError(_message)
@@ -97,8 +96,7 @@ def _create_funds_that_hold_bonds_list():
     
     # and if it is not, then run...
 
-    print("\n")
-    print("Creating funds that hold bonds list...")
+    print("[create_funds_that_hold_bonds_list] Creating funds that hold bonds list...")
 
     quarters = (
             pd
@@ -118,9 +116,6 @@ def _create_funds_that_hold_bonds_list():
     save_parquet(df, funds_that_hold_bonds_file)
     print(f"-> Saved {funds_that_hold_bonds_file}")
 
-
-#%% ========== callable work functions ========== %%#
-
 def fetch_funds_that_hold_bonds_list():
 
     '''
@@ -137,12 +132,13 @@ def fetch_funds_that_hold_bonds_list():
     except FileNotFoundError :
 
         _message = (
-            f"File with NPORT funds that hold bonds ({_start_q} - {_end_q}) not found.\n"
+            f"[fetch_funds_that_hold_bonds_list] File with NPORT funds that hold bonds ({_start_q} - {_end_q}) not found.\n"
             "Proceeding to build it..."
         )
         print(_message)
-        _create_funds_that_hold_bonds_list()
+
+        create_funds_that_hold_bonds_list()
+        
         bondfunds = load_parquet(funds_that_hold_bonds_file)
         
     return bondfunds
-# %%

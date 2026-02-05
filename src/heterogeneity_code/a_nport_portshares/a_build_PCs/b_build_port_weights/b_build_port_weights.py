@@ -89,7 +89,7 @@ def _build_quarterly_portfolio_shares(yq, aggregation_level):
 
     if not holdings_yq_file.exists():
         _message = (
-            f"File not found {holdings_yq_file}.\n"
+            f"[_build_quarterly_portfolio_shares] File not found {holdings_yq_file}.\n"
             "Please run clean_nport before running this function"
         )
         raise FileNotFoundError(_message)
@@ -143,23 +143,25 @@ def _build_quarterly_portfolio_shares(yq, aggregation_level):
 
     return holdings_df
 
-def _build_portf_weights(aggregation_level):
+#%% ========== callable functions ========== %%#
+
+def build_portf_weights(aggregation_level):
 
     #---- check that function is not run in paralell
 
     if paralell_utils.is_nested_parallel():
 
         _message = (
-            "_build_portf_weights runs in parallel, and cannot itself be called in a paralellized job."
-            "Please check the code and try again."
+            "[build_portf_weights] build_portf_weights runs in parallel, and cannot itself be called in a paralellized job.\n"
+            "Please check the code and try again.\n",
+            "(Suggestion: Run build_portf_weights() before calling the paralellized job.)"
         )
     
         raise paralell_utils.errors.NestedParallelError(_message)
 
     #---- paralellize portfolio weight construction
 
-    print("\n")
-    print("Building portfolio weights...")
+    print("[build_portf_weights] Building portfolio weights...")
 
     quarters = (
             pd
@@ -179,8 +181,6 @@ def _build_portf_weights(aggregation_level):
     save_parquet(df, portfolio_weights_file)
     print(f"-> Saved {portfolio_weights_file}")
 
-#%% ========== callable functions ========== %%#
-
 def portfolio_weights_df(keep_fund_type):
 
     try :
@@ -190,11 +190,11 @@ def portfolio_weights_df(keep_fund_type):
     except FileNotFoundError:
 
         _message = (
-            f"portfolio_weights_df ({_start_q} - {_end_q}) not found.\n"
+            f"[portfolio_weights_df] portfolio_weights_df ({_start_q} - {_end_q}) not found.\n"
             "Proceeding to build it..."
         )
         print(_message)
-        _build_portf_weights(aggregation_level)
+        build_portf_weights(aggregation_level)
         df = load_parquet(portfolio_weights_file)
 
     # select type
@@ -209,7 +209,7 @@ def portfolio_weights_df(keep_fund_type):
     
     else :
 
-        raise ValueError("type must be either 'bond_funds' or 'all'")
+        raise ValueError("[portfolio_weights_df] type must be either 'bond_funds' or 'all'")
 
     return df   
 
