@@ -303,7 +303,7 @@ for _pc in ["pc_1", "pc_2", "pc_3", "pc_4", "pc_5"]:
     fig.tight_layout()
     plt.savefig(OUT_PATH / f"EM_DM_regs_{_pc}.pdf")
     print(f"Saved OUT_PATH/EM_DM_regs_{_pc}.pdf")
-    # plt.close(fig)
+    plt.close(fig)
     # plt.show()
 
 
