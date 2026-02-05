@@ -90,7 +90,11 @@ def _build_fund_panel_collapsed_by_EM_DM_holdings():
                                        "df_argnames" : f"currency_value_{iss}"}
             for iss in issuers
         } | {
-            f"{iss}_assetshare" : {"fn" : lambda x, y : np.nanmean(x) / np.nanmean(y), 
+            f"{iss}_assetshare_sw" : {"fn" : lambda x, y : np.nanmean(x) / np.nanmean(y), 
+                                   "df_argnames" : [f"currency_value_{iss}", "fund_total_assets"]}
+            for iss in issuers
+        } | {
+            f"{iss}_assetshare_ew" : {"fn" : lambda x, y : np.nanmean(x / y), 
                                    "df_argnames" : [f"currency_value_{iss}", "fund_total_assets"]}
             for iss in issuers
         } | {
@@ -123,7 +127,7 @@ def _build_fund_panel_collapsed_by_EM_DM_holdings():
             .astype(str).str.lower().tolist()
         )
 
-    print("[_build_fund_panel_collapsed_by_EM_DM_holdings] Building collapsed fund panel (version Feb 5 4:26 pm)...")
+    print("[_build_fund_panel_collapsed_by_EM_DM_holdings] Building collapsed fund panel (version Feb 5 4:28 pm)...")
 
     result_list = Parallel(
         n_jobs = n_workers,
@@ -141,7 +145,7 @@ def _build_fund_panel_collapsed_by_EM_DM_holdings():
 def fetch_fund_collapsed_by_EM_DM_holdings():
 
     try :
-
+        
         df = load_parquet(fund_collapsed_hdgs_file)
 
     except FileNotFoundError:   
@@ -159,15 +163,28 @@ def fetch_fund_collapsed_by_EM_DM_holdings():
 
 df = fetch_fund_collapsed_by_EM_DM_holdings()
 
-plt.plot(df["quarterly"].dt.to_timestamp(), df["EM_mill"].diff() / df["EM_mill"].shift(1), label = "EM")
-plt.plot(df["quarterly"].dt.to_timestamp(), df["DM_mill"].diff() / df["DM_mill"].shift(1), label = "DM (ex-USA)")
-plt.plot(df["quarterly"].dt.to_timestamp(), df["USA_mill"].diff() / df["USA_mill"].shift(1), label = "USA")
+# compare evolution with average millions of USD invested in EM and DM
+
+plt.plot(df["quarterly"].dt.to_timestamp(), df["EM_mill"] / df["EM_mill"].mean(), label = "EM")
+plt.plot(df["quarterly"].dt.to_timestamp(), df["DM_mill"] / df["DM_mill"].mean(), label = "DM (ex-USA)")
+plt.plot(df["quarterly"].dt.to_timestamp(), df["USA_mill"] / df["USA_mill"].mean(), label = "USA")
 plt.legend()
+plt.show()
+plt.close()
 
+# compare assetshares across time (size-weighted)
 
-plt.plot(df["quarterly"].dt.to_timestamp(), df["EM_assetshare"].diff() / df["EM_assetshare"].shift(1), label = "EM")
-plt.plot(df["quarterly"].dt.to_timestamp(), df["DM_assetshare"].diff() / df["DM_assetshare"].shift(1), label = "DM (ex-USA)")
-plt.plot(df["quarterly"].dt.to_timestamp(), df["USA_assetshare"].diff() / df["USA_assetshare"].shift(1), label = "USA")
+plt.plot(df["quarterly"].dt.to_timestamp(), df["EM_assetshare_sw"] / df["EM_assetshare_sw"].mean(), label = "EM")
+plt.plot(df["quarterly"].dt.to_timestamp(), df["DM_assetshare_sw"] / df["DM_assetshare_sw"].mean(), label = "DM (ex-USA)")
+plt.plot(df["quarterly"].dt.to_timestamp(), df["USA_assetshare_sw"] / df["USA_assetshare_sw"].mean(), label = "USA")
+plt.legend()
+plt.show()
+
+# compare assetshares across time (equally-weighted)
+
+plt.plot(df["quarterly"].dt.to_timestamp(), df["EM_assetshare_ew"] / df["EM_assetshare_ew"].mean(), label = "EM")
+plt.plot(df["quarterly"].dt.to_timestamp(), df["DM_assetshare_ew"] / df["DM_assetshare_ew"].mean(), label = "DM (ex-USA)")
+plt.plot(df["quarterly"].dt.to_timestamp(), df["USA_assetshare_ew"] / df["USA_assetshare_ew"].mean(), label = "USA")
 plt.legend()
 
 
