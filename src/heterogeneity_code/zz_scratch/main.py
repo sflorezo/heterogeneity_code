@@ -7,6 +7,7 @@ from heterogeneity_code.a_nport_portshares.b_check_PCs.a_preliminary.a_merge_PCs
 import statsmodels.api as sm
 import numpy as np
 import matplotlib.pyplot as plt
+from heterogeneity_code.b_bond_prices.main import test_function
 
 # from pysfo.basic import *
 
@@ -15,3 +16,5 @@ PROCESSED_NPORT = CONFIGS["PATHS"]["PROCESSED_NPORT"]
 #%% ========== go ========== %%#
 
 fund_info = load_parquet(PROCESSED_NPORT / "NPORT_funds_allQuarters.parquet")
+
+test_function()

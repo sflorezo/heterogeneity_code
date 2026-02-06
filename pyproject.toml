@@ -16,8 +16,10 @@ dependencies = [
     "lxml==6.0.2",
     # ML packages
     "scikit-learn==1.8.0",
-    # statistics models
+    # statistics models (tmp for now)
     "statsmodels==0.14.6", # tmp, not sure if I will use it at the end
+    # yfinance (tmp for now)
+    "yfinance==1.1.0",
     # own packages (DO NOT INSTALL IN HPC BC PATHS BREAK)
     # "pysfo @ file:///storage/Dropbox/01_main/dev/pysfo",
     # "clean_nport @ file:///storage/Dropbox/01_main/dev/clean_nport",
