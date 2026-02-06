@@ -7,7 +7,16 @@ __________
 
 - Can the variation in important asset classes prices be explained by the variation in funds holdings principal components? How?
 
+<!--========== International Bond Prices Evolution ==========-->
+## International Bond Prices Evolution
 
+**Evolution of Bond Prices in Time** <br>
+<img src="_imagesdump/2026-02-06-16-44-37.png" width="650" /> <br>
+The figure shows the evolution in time of 3 very important ETFs for bonds (EM, DM and USA). What drives the variation behind the prices in these? Which countries? For this, I will need to see the holdings of such ETFs.
+
+ <br>
+
+<!--========== International Bond Holdings Evolution ==========-->
 ## International Bond Holdings Evolution
 
 <br>
