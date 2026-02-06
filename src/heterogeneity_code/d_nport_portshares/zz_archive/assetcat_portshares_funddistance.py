@@ -1,3 +1,6 @@
+# pyright: strict=false
+
+
 #%% ========== headers ========== %%#
 
 from configs import CONFIGS

@@ -42,8 +42,4 @@ plt.legend()
 
 yf_dict["EM"].funds_data.bond_holdings
 
-#%% ========== test function ========== %%#
 
-def test_function():
-
-    print("test")

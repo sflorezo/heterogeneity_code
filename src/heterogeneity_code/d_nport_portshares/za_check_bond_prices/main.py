@@ -2,7 +2,7 @@
 
 from heterogeneity_code.configs import CONFIGS
 from pysfo.basic import load_parquet
-from heterogeneity_code.a_nport_portshares.a_build_PCs.b_build_port_weights.b_build_port_weights import _keep_bond_funds
+from heterogeneity_code.d_nport_portshares.a_build_PCs.b_build_port_weights.b_build_port_weights import _keep_bond_funds
 
 # from pysfo.basic import *
 
