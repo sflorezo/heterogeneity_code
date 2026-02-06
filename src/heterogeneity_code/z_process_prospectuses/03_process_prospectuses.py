@@ -6,7 +6,7 @@ DO_NOT_TURN_TO_TRUE_UNLESS_SURE_ABOUT_IT = False
 
 #%% ========== libraries ========== %%#
 
-from heterogeneity_code.configs import CONFIGS
+from heterogeneity_code.a_configs import CONFIGS
 from sec_api import QueryApi
 from pathlib import Path
 import random

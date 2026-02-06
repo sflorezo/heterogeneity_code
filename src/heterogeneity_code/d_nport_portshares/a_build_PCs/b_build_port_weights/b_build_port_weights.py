@@ -8,7 +8,7 @@ checks = False
 
 #%% ========== project-wide configs ========== %%#
 
-from heterogeneity_code.configs import CONFIGS
+from heterogeneity_code.a_configs import CONFIGS
 from typing import cast, Dict
 from pysfo.basic import load_parquet, save_parquet, relocate_columns
 from pysfo import paralell_utils

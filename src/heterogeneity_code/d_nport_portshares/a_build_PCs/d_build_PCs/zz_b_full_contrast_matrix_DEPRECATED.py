@@ -5,7 +5,7 @@ _lambda = 1e-4
 
 #%% ========== uplload libraries ========== %%#
 
-from heterogeneity_code.configs import CONFIGS
+from heterogeneity_code.a_configs import CONFIGS
 from pysfo.basic import load_parquet, save_parquet, statatab, sumstats, test_time
 from pathlib import Path
 import pandas as pd

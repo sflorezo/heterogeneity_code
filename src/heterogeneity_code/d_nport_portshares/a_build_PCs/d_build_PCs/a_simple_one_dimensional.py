@@ -5,7 +5,7 @@
 
 #%% ========== project-wide configs ========== %%#
 
-from heterogeneity_code.configs import CONFIGS
+from heterogeneity_code.a_configs import CONFIGS
 from pysfo.basic import load_parquet, save_parquet, statatab, sumstats, test_time
 from pysfo import paralell_utils
 from pathlib import Path

@@ -1,6 +1,6 @@
 #%% ========== configs ========== %%#
 
-from heterogeneity_code.configs import CONFIGS
+from heterogeneity_code.a_configs import CONFIGS
 from pysfo.basic import load_parquet
 from pysfo.basic import na_report
 from typing import Tuple, Hashable, cast

@@ -4,7 +4,7 @@
 
 #%% ========= imports ========== %%#
 
-from heterogeneity_code.configs import CONFIGS
+from heterogeneity_code.a_configs import CONFIGS
 from pysfo.basic import load_parquet
 from matplotlib import pyplot as plt
 import pandas as pd
