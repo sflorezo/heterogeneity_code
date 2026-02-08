@@ -8,10 +8,14 @@ from joblib import Parallel, delayed
 from typing import cast, Dict
 from pysfo.basic import save_parquet, load_parquet, relocate_columns
 from heterogeneity_code.b_bond_prices.a_by_etfs.a_params.ETFs_to_check import EM_DMexUS_US as funds_dict
+from pathlib import Path
+import numpy as np
+from matplotlib import pyplot as plt
 
 # from pysfo.basic import *
 
 PROCESSED_NPORT = CONFIGS["PATHS"]["PROCESSED_NPORT"]
+PROJECT_TEMP = CONFIGS["PATHS"]["PROJECT_TEMP"]
 
 process_quarters = cast(Dict, CONFIGS["NPORT"]["process_quarters"])
 joblib_n_workers = CONFIGS["GENERAL"]["n_workers"]
@@ -23,7 +27,7 @@ joblib_verbose = CONFIGS["GENERAL"]["batch_job_verbose"]
 _start_q = process_quarters["start"]
 _end_q = process_quarters["end"]
 
-individual_fund_holdings_filename = f"individualholdings_panel_{_start_q}_{_end_q}_" + "{fund_ticker}.parquet"
+individual_fund_holdings_filename = PROJECT_TEMP / (f"individualholdings_panel_{_start_q}_{_end_q}_" + "{fund_ticker}.parquet")
 
 
 #%% ========== helper function ========== %%#
@@ -110,8 +114,8 @@ def _build_holdings_panel_for_fund_ticker(fund_ticker):
     df["fund_ticker"] = fund_ticker
     df = relocate_columns(df, cols_to_move = ["fund_ticker"], anchor_col = "fund_id")
 
-    _save_filename = f"{individual_fund_holdings_filename.format(fund_ticker = fund_ticker)}"
-    save_parquet(df, PROCESSED_NPORT / _save_filename)
+    _save_filename = Path(f"{str(individual_fund_holdings_filename).format(fund_ticker = fund_ticker)}")
+    save_parquet(df, PROJECT_TEMP / _save_filename)
     print(f"-> Saved {_save_filename}")
 
 def _generate_fund_hdgs_for_interest_funds():
@@ -129,9 +133,54 @@ def _generate_fund_hdgs_for_interest_funds():
     print("Finished creating individual fund holdings for interest funds.")
 
 
+#%% ========== go ========== %%#
 
+ticker = "EMB"
+file = Path(f"{str(individual_fund_holdings_filename).format(fund_ticker = ticker)}")
 
-#%% ========== rest ========== %%#
+df = load_parquet(file)
+
+is_EM = df["investment_country_EME"] == 1
+is_DM_ex_USA = (df["investment_country_DM"] == 1) & (df["investment_country_iso3"] != "USA")
+is_USA = df["investment_country_iso3"] == "USA"
+
+df["region"] = np.select(
+    [is_EM, is_DM_ex_USA, is_USA],
+    ["EM", "DM_EX_US", "USA"],
+    default = ""
+)
+
+keep = is_EM | is_DM_ex_USA | is_USA
+df = df[keep]
+
+# collapse and graph
+
+df = (
+    df
+    .groupby(["quarterly", "region"])
+    .agg({"currency_value" : "sum",
+          "fund_total_assets" : "first"})
+    .reset_index()
+)
+
+df = (
+    df
+    .pivot(
+        index = ["quarterly", "fund_total_assets"],
+        columns = ["region"],
+        values = "currency_value"
+    )
+    .reset_index()
+)
+
+for col in df.iloc[:,2:5].columns:
+    df[f"s_{col}"] = df[col] / df["fund_total_assets"]
+
+plt.plot(df["quarterly"].dt.to_timestamp(), df["s_DM_EX_US"])
+plt.plot(df["quarterly"].dt.to_timestamp(), df["s_EM"])
+plt.plot(df["quarterly"].dt.to_timestamp(), df["s_USA"])
+
+plt.plot(df["quarterly"].dt.to_timestamp(), df["EM"])
 
 # yq = "2025q3"
 # holdings_df = load_parquet(PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet")
