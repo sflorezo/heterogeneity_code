@@ -5,7 +5,8 @@ EM = {
     "region_desc" : "Emerging Markets",
     "funds" : [
         {
-            "ticker" : "EMB"
+            "ticker" : "EMB",
+            "full_name" : "iShares J.P. Morgan USD Emerging Markets Bond ETF",
         }
     ]
 }
@@ -15,7 +16,8 @@ DM_EX_US = {
     "region_desc": "Developed Markets (ex-USA)",
     "funds" : [
         {
-            "ticker" : "IGOV"
+            "ticker" : "IGOV",
+            "full_name" : "iShares International Treasury Bond ETF",
         }
     ]
 }
@@ -25,7 +27,8 @@ USA = {
     "region_desc" : "United States",
     "funds" : [
         {
-            "ticker" : "AGG"
+            "ticker" : "AGG",
+            "full_name" : "iShares Core US Aggregate Bond ETF",
         }
     ]
 }
