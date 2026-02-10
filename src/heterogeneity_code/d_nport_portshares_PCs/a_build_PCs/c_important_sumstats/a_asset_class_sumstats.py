@@ -2,7 +2,7 @@
 
 #%% ========== project-wide configs ========== %%#
 
-from heterogeneity_code.d_nport_portshares.a_build_PCs.b_build_port_weights.b_build_port_weights import portfolio_weights_df
+from heterogeneity_code.d_nport_portshares_PCs.a_build_PCs.b_build_port_weights.b_build_port_weights import portfolio_weights_df
 from heterogeneity_code.a_configs import CONFIGS
 from pysfo.basic import relocate_columns, export_txt
 import pandas as pd

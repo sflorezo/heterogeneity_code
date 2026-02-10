@@ -1,3 +1,8 @@
+# pyright: reportArgumentType=false
+# pyright: reportAttributeAccessIssue=false
+# pyright: reportOptionalSubscript=false
+
+
 #%% ========== configs ========== %%#
 
 import yfinance as yf

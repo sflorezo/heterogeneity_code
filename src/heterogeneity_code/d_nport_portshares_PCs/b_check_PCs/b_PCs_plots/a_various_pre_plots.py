@@ -8,8 +8,8 @@ from heterogeneity_code.a_configs import CONFIGS
 from pysfo.basic import load_parquet
 from matplotlib import pyplot as plt
 import pandas as pd
-from heterogeneity_code.d_nport_portshares.b_check_PCs.a_preliminary.a_merge_PCs_and_funds import fetch_PCs_with_fund_info
-from heterogeneity_code.d_nport_portshares.a_build_PCs.b_build_port_weights.b_build_port_weights import portfolio_weights_df
+from heterogeneity_code.d_nport_portshares_PCs.b_check_PCs.a_preliminary.a_merge_PCs_and_funds import fetch_PCs_with_fund_info
+from heterogeneity_code.d_nport_portshares_PCs.a_build_PCs.b_build_port_weights.b_build_port_weights import portfolio_weights_df
 import numpy as np
 from matplotlib.ticker import MultipleLocator
 

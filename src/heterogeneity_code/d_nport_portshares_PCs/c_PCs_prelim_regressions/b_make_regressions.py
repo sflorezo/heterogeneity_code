@@ -13,7 +13,7 @@ generate_regressions = False
 from heterogeneity_code.a_configs import CONFIGS
 from pysfo.basic import load_parquet, save_parquet
 from pysfo import paralell_utils
-from heterogeneity_code.d_nport_portshares.b_check_PCs.a_preliminary.a_merge_PCs_and_funds import fetch_PCs_with_fund_info
+from heterogeneity_code.d_nport_portshares_PCs.b_check_PCs.a_preliminary.a_merge_PCs_and_funds import fetch_PCs_with_fund_info
 import statsmodels.api as sm
 import numpy as np
 import matplotlib.pyplot as plt
@@ -241,8 +241,8 @@ def build_regression_results_df():
 
 def fetch_regression_results_df():
 
-    from heterogeneity_code.d_nport_portshares.a_build_PCs.a_select_sample.funds_that_hold_bonds import create_funds_that_hold_bonds_list
-    from heterogeneity_code.d_nport_portshares.a_build_PCs.d_build_PCs.a_simple_one_dimensional import build_assetcat_PC_fullpanel
+    from heterogeneity_code.d_nport_portshares_PCs.a_build_PCs.a_select_sample.funds_that_hold_bonds import create_funds_that_hold_bonds_list
+    from heterogeneity_code.d_nport_portshares_PCs.a_build_PCs.d_build_PCs.a_simple_one_dimensional import build_assetcat_PC_fullpanel
 
     try :
 

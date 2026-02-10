@@ -14,8 +14,8 @@ generate_regressions = False
 from heterogeneity_code.a_configs import CONFIGS
 from pysfo.basic import load_parquet, save_parquet
 from pysfo import paralell_utils
-from heterogeneity_code.d_nport_portshares.a_build_PCs.b_build_port_weights.b_build_port_weights import _keep_bond_funds
-from heterogeneity_code.d_nport_portshares.b_check_PCs.a_preliminary.a_merge_PCs_and_funds import fetch_PCs_with_fund_info
+from heterogeneity_code.d_nport_portshares_PCs.a_build_PCs.b_build_port_weights.b_build_port_weights import _keep_bond_funds
+from heterogeneity_code.d_nport_portshares_PCs.b_check_PCs.a_preliminary.a_merge_PCs_and_funds import fetch_PCs_with_fund_info
 import statsmodels.api as sm
 import numpy as np
 import matplotlib.pyplot as plt
@@ -47,7 +47,7 @@ fund_collapsed_hdgs_file = PROJECT_TEMP / f"fund_collapsed_hdgs_file_{_start_qua
 def _build_fund_panel_collapsed_by_EM_DM_holdings():
 
     from pysfo import paralell_utils
-    from heterogeneity_code.d_nport_portshares.c_PCs_prelim_regressions.b_make_regressions import _collapse_debt_holdings_EM_DM_USA
+    from heterogeneity_code.d_nport_portshares_PCs.c_PCs_prelim_regressions.b_make_regressions import _collapse_debt_holdings_EM_DM_USA
     from pysfo.basic import groupby_apply_various
 
     #check that function is not run in paralell

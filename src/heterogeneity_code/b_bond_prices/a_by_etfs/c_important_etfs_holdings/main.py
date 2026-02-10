@@ -1,3 +1,8 @@
+# pyright: reportArgumentType=false
+# pyright: reportAttributeAccessIssue=false
+# pyright: reportOptionalSubscript=false
+# pyright: reportGeneralTypeIssues=false
+
 #%% ========== project-wide configs ========== %%#
 
 from heterogeneity_code.a_configs import CONFIGS
