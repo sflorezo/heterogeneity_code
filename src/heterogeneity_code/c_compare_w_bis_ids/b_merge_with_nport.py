@@ -6,7 +6,7 @@ from pysfo.basic import save_parquet, load_parquet, dupli_report
 from pysfo.geo_utils.country_groups import get_country_list_in_category
 import country_converter as coco
 from heterogeneity_code.c_compare_w_bis_ids.a_consolidate_eme_debt import get_bis_ids_eme_debt_panel
-from heterogeneity_code.b_prep_nport_holdings.a_select_sample.funds_that_hold_bonds import fetch_funds_that_hold_bonds_list
+from heterogeneity_code.b_prep_nport_holdings.a_sample_selectors.funds_that_hold_bonds import keep_bond_funds
 import pandas as pd
 from matplotlib import pyplot as plt
 
@@ -19,12 +19,30 @@ PROCESSED_NPORT = CONFIGS["PATHS"]["PROCESSED_NPORT"]
 
 # %% =========== helper functions ==========#%%
 
-yq = "2020q4"
+# def build_quarterly_fund_investments_by_investment_country()
 
-_hdgs_file_path = PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet"
+# yq = "2020q4"
+# _hdgs_file_path = PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet"
 
-# get needed data
+# # get needed data
 
-holdings_df = load_parquet(_hdgs_file_path)
+# holdings_df = keep_bond_funds(load_parquet(_hdgs_file_path))
+
+# # collapse holdings_df at the EME level
+
+# keep = holdings_df["investment_country_EME"] == 1
+# holdings_df = holdings_df[keep]
+# holdings_df = (
+#     holdings_df
+#     .groupby(["fund_id", "quarterly", "investment_country_iso2"])
+#     .agg({"currency_value" : "sum"})
+#     .reset_index()
+# )
+
+
+
+
+# %% rest
+
+
 bis_ids_eme = get_bis_ids_eme_debt_panel()
-

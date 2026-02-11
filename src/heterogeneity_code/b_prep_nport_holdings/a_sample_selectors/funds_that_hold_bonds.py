@@ -141,3 +141,49 @@ def fetch_funds_that_hold_bonds_list():
         bondfunds = load_parquet(funds_that_hold_bonds_file)
         
     return bondfunds
+
+
+def keep_bond_funds(holdings_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Filters a NPORT Holdings DataFrame to retain only funds that hold bonds.
+
+    This function merges the given holdings DataFrame with a pre-defined list 
+    of bond funds to filter out entries, leaving only those funds confirmed to 
+    hold bonds.
+
+    Parameters:
+    - holdings_df (pd.DataFrame): 
+      The DataFrame containing holdings data, including 'fund_id' and 
+      'quarterly' columns, which are necessary for merging with the bond 
+      funds list.
+
+    Returns:
+    - pd.DataFrame: 
+      A filtered DataFrame containing only rows corresponding to bond-holding
+      funds.
+
+    Notes:
+    - Utilizes the 'fetch_funds_that_hold_bonds_list' function to obtain the 
+      list of funds classified as bond holders.
+    - Performs a left merge to ensure that all bond-holding funds are retained 
+      in the final result, and filters out non-bond funds.
+    """
+
+    # yq = "2025q2"
+    # holdings_df = load_parquet(PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet")
+
+    from heterogeneity_code.b_prep_nport_holdings.a_sample_selectors.funds_that_hold_bonds import fetch_funds_that_hold_bonds_list
+
+    bondfunds = fetch_funds_that_hold_bonds_list()
+    bondfunds["bondfunds"] = 1
+
+    holdings_df = pd.merge(holdings_df, bondfunds, on = ["fund_id", "quarterly"], how = "left", validate = "m:1")
+    holdings_df = holdings_df[holdings_df["bondfunds"] == 1]
+
+    return holdings_df
+
+__all__ = [
+    "create_funds_that_hold_bonds_list",
+    "fetch_funds_that_hold_bonds_list",
+    "keep_bond_funds",
+]

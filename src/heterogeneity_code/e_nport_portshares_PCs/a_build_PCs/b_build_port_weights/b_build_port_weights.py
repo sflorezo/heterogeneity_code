@@ -38,21 +38,6 @@ portfolio_weights_file = PROJECT_TEMP / f"NPORT_assetcat_portfolioshares_{_start
 
 #%% ========== helper functions ========== %%
 
-def _keep_bond_funds(holdings_df: pd.DataFrame) -> pd.DataFrame:
-
-    # yq = "2025q2"
-    # holdings_df = load_parquet(PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet")
-
-    from heterogeneity_code.b_prep_nport_holdings.a_select_sample.funds_that_hold_bonds import fetch_funds_that_hold_bonds_list
-
-    bondfunds = fetch_funds_that_hold_bonds_list()
-    bondfunds["bondfunds"] = 1
-
-    holdings_df = pd.merge(holdings_df, bondfunds, on = ["fund_id", "quarterly"], how = "left", validate = "m:1")
-    holdings_df = holdings_df[holdings_df["bondfunds"] == 1]
-
-    return holdings_df
-
 def _group_asset_cat_levels(df: pd.DataFrame, aggregation_level) -> pd.DataFrame:
 
     from heterogeneity_code.e_nport_portshares_PCs.a_build_PCs.b_build_port_weights.a_build_asset_bucket_helpfuns import (
@@ -183,6 +168,8 @@ def build_portf_weights(aggregation_level):
 
 def portfolio_weights_df(keep_fund_type):
 
+    from heterogeneity_code.b_prep_nport_holdings.a_sample_selectors.funds_that_hold_bonds import keep_bond_funds
+
     try :
         
         df = load_parquet(portfolio_weights_file)
@@ -201,7 +188,7 @@ def portfolio_weights_df(keep_fund_type):
     
     if keep_fund_type == "bond_funds":
 
-        df = _keep_bond_funds(df)
+        df = keep_bond_funds(df)
 
     elif keep_fund_type == "all" :
 
