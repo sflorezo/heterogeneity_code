@@ -93,7 +93,6 @@ def create_funds_that_hold_bonds_list():
         
         raise paralell_utils.errors.NestedParallelError(_message)
     
-    
     # and if it is not, then run...
 
     print("[create_funds_that_hold_bonds_list] Creating funds that hold bonds list...")

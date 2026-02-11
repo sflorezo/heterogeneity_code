@@ -43,7 +43,7 @@ def _keep_bond_funds(holdings_df: pd.DataFrame) -> pd.DataFrame:
     # yq = "2025q2"
     # holdings_df = load_parquet(PROCESSED_NPORT / f"NPORT_holdings_{yq}_FULLDATA.parquet")
 
-    from heterogeneity_code.e_nport_portshares_PCs.a_build_PCs.a_select_sample.funds_that_hold_bonds import fetch_funds_that_hold_bonds_list
+    from heterogeneity_code.b_prep_nport_holdings.a_select_sample.funds_that_hold_bonds import fetch_funds_that_hold_bonds_list
 
     bondfunds = fetch_funds_that_hold_bonds_list()
     bondfunds["bondfunds"] = 1

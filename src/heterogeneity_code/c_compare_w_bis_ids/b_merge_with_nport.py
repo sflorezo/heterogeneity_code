@@ -6,6 +6,7 @@ from pysfo.basic import save_parquet, load_parquet, dupli_report
 from pysfo.geo_utils.country_groups import get_country_list_in_category
 import country_converter as coco
 from heterogeneity_code.c_compare_w_bis_ids.a_consolidate_eme_debt import get_bis_ids_eme_debt_panel
+from heterogeneity_code.b_prep_nport_holdings.a_select_sample.funds_that_hold_bonds import fetch_funds_that_hold_bonds_list
 import pandas as pd
 from matplotlib import pyplot as plt
 

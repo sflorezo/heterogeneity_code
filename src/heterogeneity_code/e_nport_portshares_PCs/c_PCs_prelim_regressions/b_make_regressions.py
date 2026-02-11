@@ -241,7 +241,7 @@ def build_regression_results_df():
 
 def fetch_regression_results_df():
 
-    from heterogeneity_code.e_nport_portshares_PCs.a_build_PCs.a_select_sample.funds_that_hold_bonds import create_funds_that_hold_bonds_list
+    from heterogeneity_code.b_prep_nport_holdings.a_select_sample.funds_that_hold_bonds import create_funds_that_hold_bonds_list
     from heterogeneity_code.e_nport_portshares_PCs.a_build_PCs.d_build_PCs.a_simple_one_dimensional import build_assetcat_PC_fullpanel
 
     try :
