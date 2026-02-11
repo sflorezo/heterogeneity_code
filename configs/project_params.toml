@@ -1,6 +1,7 @@
 # Project runtime configuration parameters.
 
 [paths]
+DATA_RAW_PATH = "$DATA_RAW"
 RAW_NPORT = "$DATA_RAW/sec_NPORT"
 PROCESSED_NPORT = "$DATA_WORK/sec_NPORT_work"
 PROJECT_TEMP = "$DATA_TEMP/heterogeneity_temp"

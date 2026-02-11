@@ -8,7 +8,7 @@
 import yfinance as yf
 import matplotlib.pyplot as plt
 import pandas as pd
-from heterogeneity_code.b_bond_prices.a_by_etfs.a_params.ETFs_to_check import EM_DMexUS_US as funds_dict
+from heterogeneity_code.d_bond_prices.a_by_etfs.a_params.ETFs_to_check import EM_DMexUS_US as funds_dict
 
 # from pprint import pprint
 

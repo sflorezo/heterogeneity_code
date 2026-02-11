@@ -14,7 +14,7 @@ PROJECT_TEMP = CONFIGS["PATHS"]["PROJECT_TEMP"]
 
 def fetch_PCs_with_fund_info():
 
-    from heterogeneity_code.d_nport_portshares_PCs.a_build_PCs.d_build_PCs.a_simple_one_dimensional import fetch_PC_df
+    from heterogeneity_code.e_nport_portshares_PCs.a_build_PCs.d_build_PCs.a_simple_one_dimensional import fetch_PC_df
 
     # function params
 

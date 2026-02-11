@@ -12,7 +12,7 @@ import pandas as pd
 from joblib import Parallel, delayed
 from typing import cast, Dict
 from pysfo.basic import save_parquet, load_parquet, relocate_columns
-from heterogeneity_code.b_bond_prices.a_by_etfs.a_params.ETFs_to_check import EM_DMexUS_US as funds_dict
+from heterogeneity_code.d_bond_prices.a_by_etfs.a_params.ETFs_to_check import EM_DMexUS_US as funds_dict
 from pathlib import Path
 import numpy as np
 from matplotlib import pyplot as plt
@@ -44,7 +44,7 @@ def _build_holdings_panel_for_fund_ticker(fund_ticker):
     # fund_ticker = "EMB"
     ####
 
-    from heterogeneity_code.b_bond_prices.a_by_etfs.a_params.ETFs_to_check import EM_DMexUS_US as funds_dict
+    from heterogeneity_code.d_bond_prices.a_by_etfs.a_params.ETFs_to_check import EM_DMexUS_US as funds_dict
 
     #---- helper functions
 

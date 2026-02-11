@@ -127,7 +127,7 @@ def build_assetcat_PC_fullpanel():
 
     # packages
 
-    from heterogeneity_code.d_nport_portshares_PCs.a_build_PCs.b_build_port_weights.b_build_port_weights import portfolio_weights_df
+    from heterogeneity_code.e_nport_portshares_PCs.a_build_PCs.b_build_port_weights.b_build_port_weights import portfolio_weights_df
 
     #check that function is not run in paralell
 
