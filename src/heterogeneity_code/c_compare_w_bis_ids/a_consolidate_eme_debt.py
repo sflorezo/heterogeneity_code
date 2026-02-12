@@ -41,6 +41,10 @@ def _build_bis_ids_eme_debt_panel():
     else : 
         df = pd.concat(eme_df_list, axis=0)
 
+    # leave quarterly variable
+
+    df["quarterly"] = pd.PeriodIndex(df["period"], freq="Q")
+
     save_parquet(df, tmp_0_ids_consolidated_eme_debt_file_name)
     print("bis_ids_eme_debt_panel finished.")
 
@@ -74,7 +78,7 @@ def get_bis_ids_eme_debt_panel():
     if True in dupli_test["Duplicated"]:
         raise ValueError("Check this. I did something wrong.")
 
-    df = df[["period", "issuer_res", "issuer_res_label", "value"]]
+    df = df[["quarterly", "issuer_res", "issuer_res_label", "value"]]
 
     return df
 
